@@ -25,6 +25,10 @@ export const ABOUT_METRICS: readonly AboutMetric[] = [
     label: 'Beastudi Etos → ETOS ID',
   },
   {
+    value: '2000+ Alumni',
+    label: 'Jejaring Dalam Hingga Luar Negeri',
+  },
+  {
     value: '15 PTN',
     label: 'Kampus Mitra se-Indonesia',
   },

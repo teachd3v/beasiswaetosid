@@ -45,13 +45,13 @@ export function AboutSection() {
           </div>
         </div>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {ABOUT_METRICS.map((metric) => (
-            <div key={metric.label} className="editorial-card p-6">
-              <p className="text-[clamp(1.65rem,2.8vw,2.25rem)] font-extrabold tracking-[-0.04em] text-[var(--brand-green-dark)]">
+            <div key={metric.label} className="editorial-card flex flex-col p-5">
+              <p className="whitespace-nowrap text-[clamp(1.25rem,1.55vw,1.6rem)] font-extrabold leading-tight tracking-[-0.035em] text-[var(--brand-green-dark)]">
                 {metric.value}
               </p>
-              <p className="mt-2 text-sm font-medium text-[var(--ink-secondary)]">
+              <p className="mt-2 text-xs font-medium leading-relaxed text-[var(--ink-secondary)] sm:text-sm">
                 {metric.label}
               </p>
             </div>
