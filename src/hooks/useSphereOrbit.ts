@@ -223,6 +223,7 @@ export function useSphereOrbit({
     let parallaxY = 0;
     let pressed = false;
     let dragging = false;
+    let touchScrollAborted = false;
     let startX = 0;
     let startY = 0;
     let lastX = 0;
@@ -241,6 +242,7 @@ export function useSphereOrbit({
       if (e.button !== 0 && e.pointerType === 'mouse') return;
       pressed = true;
       dragging = false;
+      touchScrollAborted = false;
       swallowClick = false;
       startX = lastX = e.clientX;
       startY = lastY = e.clientY;
@@ -256,12 +258,18 @@ export function useSphereOrbit({
           targetY = ((e.clientY - r.top) / r.height) * 2 - 1;
         }
       }
-      if (!pressed) return;
+      if (!pressed || touchScrollAborted) return;
 
-      if (
-        !dragging &&
-        Math.hypot(e.clientX - startX, e.clientY - startY) > DRAG_THRESHOLD_PX
-      ) {
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
+      if (!dragging && Math.hypot(deltaX, deltaY) > DRAG_THRESHOLD_PX) {
+        // On touch devices, let predominantly vertical gestures scroll the page naturally.
+        if (e.pointerType === 'touch' && Math.abs(deltaY) > Math.abs(deltaX) * 1.15) {
+          touchScrollAborted = true;
+          pressed = false;
+          return;
+        }
         dragging = true;
         stage.setPointerCapture(e.pointerId);
         stage.classList.add('is-dragging');

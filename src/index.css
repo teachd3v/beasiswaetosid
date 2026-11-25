@@ -2,6 +2,10 @@
 @import './styles/tokens.css';
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   html,
   body {
     margin: 0;
@@ -25,20 +29,42 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--ink-primary);
-    outline-offset: 4px;
+    outline: 3px solid var(--brand-green-dark);
+    outline-offset: 3px;
   }
+}
+
+.section-anchor {
+  scroll-margin-top: 5rem;
 }
 
 .showcase-viewer-shape {
   border-radius: var(--radius-viewer);
 }
 
+.editorial-card {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--surface-card-border);
+  background-color: var(--surface-card);
+  transition:
+    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.25s ease,
+    box-shadow 0.3s ease;
+}
+
+.editorial-card-interactive:hover {
+  transform: translateY(-3px);
+  border-color: rgba(4, 143, 57, 0.28);
+  box-shadow:
+    0 2px 6px rgb(12 10 8 / 0.04),
+    0 18px 40px rgb(12 10 8 / 0.06);
+}
+
 .globe-stage {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  touch-action: pinch-zoom;
+  touch-action: pan-y pinch-zoom;
   user-select: none;
   -webkit-user-select: none;
   cursor: grab;
@@ -93,7 +119,7 @@
 }
 
 .orbit-card:focus-visible {
-  outline: 2px solid var(--ink-primary);
+  outline: 2px solid var(--brand-green-dark);
   outline-offset: 3px;
 }
 
@@ -124,8 +150,8 @@
 
 .lightbox-backdrop {
   background-color: var(--surface-lightbox);
-  backdrop-filter: blur(28px) saturate(0.84);
-  -webkit-backdrop-filter: blur(28px) saturate(0.84);
+  backdrop-filter: blur(28px) saturate(0.88);
+  -webkit-backdrop-filter: blur(28px) saturate(0.88);
 }
 
 .nav-backdrop {
@@ -134,9 +160,157 @@
   -webkit-backdrop-filter: blur(14px) saturate(1.08);
 }
 
+@keyframes emeraldShimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes emeraldTextGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 10px rgba(4, 143, 57, 0.22))
+      drop-shadow(0 0 24px rgba(91, 198, 41, 0.14));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(4, 143, 57, 0.36))
+      drop-shadow(0 0 38px rgba(91, 198, 41, 0.28));
+  }
+}
+
+@keyframes emeraldAuraPulse {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  50% {
+    opacity: 0.78;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+.hero-glow-aura {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  width: min(86vw, 44rem);
+  height: clamp(11rem, 26vw, 19rem);
+  border-radius: 9999px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(91, 198, 41, 0.34) 0%,
+    rgba(196, 251, 198, 0.36) 38%,
+    rgba(4, 143, 57, 0.08) 65%,
+    rgba(255, 255, 255, 0) 78%
+  );
+  filter: blur(36px);
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: emeraldAuraPulse 4.4s ease-in-out infinite;
+}
+
+.hero-glow-title {
+  background-image: linear-gradient(
+    112deg,
+    #015f37 0%,
+    #048f39 24%,
+    #5bc629 44%,
+    #b7f7b9 50%,
+    #5bc629 56%,
+    #048f39 76%,
+    #015f37 100%
+  );
+  background-size: 260% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  will-change: background-position, filter;
+  animation:
+    emeraldShimmer 5.6s ease-in-out infinite,
+    emeraldTextGlow 4.4s ease-in-out infinite;
+}
+
+.flip-scene {
+  perspective: 1200px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.flip-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius-card);
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+.faq-accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.faq-accordion-content.is-open {
+  grid-template-rows: 1fr;
+}
+
+.faq-accordion-inner {
+  overflow: hidden;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .orbit-card,
-  .orbit-card img {
+  .orbit-card img,
+  .editorial-card,
+  .flip-card-inner,
+  .faq-accordion-content {
     transition: none;
+  }
+
+  .hero-glow-title {
+    animation: none;
+    background-position: 30% 50%;
+    filter: drop-shadow(0 0 12px rgba(4, 143, 57, 0.22));
+  }
+
+  .hero-glow-aura {
+    animation: none;
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(1);
   }
 }

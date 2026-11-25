@@ -45,11 +45,13 @@ export function MediaGlobeStage({
       const visibleFront = buttons.filter(
         (btn) => Number.parseFloat(btn.dataset.zNorm ?? '0') >= -0.15,
       );
-      const pool = (visibleFront.length >= 3 ? visibleFront : buttons).slice().sort(
-        (a, b) =>
-          Number.parseFloat(a.dataset.screenX ?? '0') -
-          Number.parseFloat(b.dataset.screenX ?? '0'),
-      );
+      const pool = (visibleFront.length >= 3 ? visibleFront : buttons)
+        .slice()
+        .sort(
+          (a, b) =>
+            Number.parseFloat(a.dataset.screenX ?? '0') -
+            Number.parseFloat(b.dataset.screenX ?? '0'),
+        );
 
       const currentIdx = pool.indexOf(focused as HTMLButtonElement);
       if (currentIdx === -1) return;
@@ -63,66 +65,71 @@ export function MediaGlobeStage({
   );
 
   return (
-    <main
+    <section
       id="top"
-      className="relative flex flex-1 flex-col items-center justify-center overflow-x-clip bg-[var(--bg-canvas)]"
+      aria-labelledby="showcase-title"
+      className="section-anchor relative flex min-h-[calc(100dvh-4.25rem)] w-full flex-col items-center justify-between overflow-x-clip border-b border-black/6 bg-[var(--bg-canvas)] pb-6"
     >
-      <section
-        aria-labelledby="showcase-title"
-        className="relative flex w-full flex-1 flex-col items-center justify-center"
+      <div
+        ref={stageRef}
+        role="group"
+        aria-roledescription="Galeri bola foto 3D"
+        aria-label="Bola dokumentasi ETOS ID. Seret untuk memutar, pilih foto untuk memperbesar, atau tekan panah kiri dan kanan saat fokus berada pada foto."
+        onKeyDown={handleStageKeyDown}
+        className="globe-stage relative flex h-[calc(100dvh-8.5rem)] min-h-[460px] w-full flex-1 items-center justify-center"
       >
+        {/* Headline sits at z-index 0; back cards (< 0) render behind it and front cards (>= 0) pass over it */}
         <div
-          ref={stageRef}
-          role="group"
-          aria-roledescription="Galeri bola foto 3D"
-          aria-label="Bola dokumentasi Kongres Kemandirian. Seret untuk memutar, pilih foto untuk memperbesar, atau tekan panah kiri dan kanan saat fokus berada pada foto."
-          onKeyDown={handleStageKeyDown}
-          className="globe-stage relative flex h-[calc(100dvh-6.75rem)] min-h-[480px] w-full items-center justify-center"
+          style={{ zIndex: HEADLINE_Z_INDEX }}
+          className="pointer-events-none relative flex max-w-[min(92vw,46rem)] flex-col items-center px-4 text-center"
         >
-          {/* Headline sits at z-index 0; back cards (< 0) render behind it and front cards (>= 0) pass over it */}
-          <div
-            style={{ zIndex: HEADLINE_Z_INDEX }}
-            className="pointer-events-none relative flex flex-col items-center px-4 text-center"
-          >
-            <h1
-              id="showcase-title"
-              style={{ fontFamily: 'var(--font-display)' }}
-              className="m-0 text-[clamp(2.75rem,8vw,7.75rem)] font-bold leading-[0.88] tracking-[-0.04em] text-[var(--ink-primary)]"
-            >
-              <span className="block">Kongres</span>
-              <span className="block">Kemandirian</span>
-            </h1>
-            <p className="mt-4 max-w-[min(90vw,31rem)] text-[clamp(0.95rem,1.2vw,1.125rem)] font-medium leading-[1.42] tracking-[-0.012em] text-[#3d3a35] sm:mt-5">
-              Temu Tokoh Cendekiawan Indonesia
-            </p>
-          </div>
+          <div aria-hidden="true" className="hero-glow-aura" />
 
-          {items.length === 0 ? (
-            <div className="relative z-10 mt-4 rounded-2xl border border-black/10 bg-white/95 px-5 py-3 text-sm text-[var(--ink-muted)]">
-              Belum ada media dokumentasi yang dimuat.
-            </div>
-          ) : (
-            <ul className="orbit-list">
-              {items.map((item) => (
-                <MediaCard
-                  key={item.id}
-                  item={item}
-                  isLightboxSource={activeItemId === item.id}
-                  isLazy={item.index >= MOBILE_INITIAL_EAGER_COUNT}
-                  registerCard={registerCard}
-                  onSelect={onSelectMedia}
-                />
-              ))}
-            </ul>
-          )}
+          <h1
+            id="showcase-title"
+            style={{ fontFamily: 'var(--font-display)' }}
+            className="hero-glow-title relative m-0 pb-1 text-[clamp(2.65rem,7.8vw,7.25rem)] font-extrabold leading-[0.9] tracking-[-0.04em]"
+          >
+            <span className="block">Ressillient</span>
+            <span className="block">Generations</span>
+          </h1>
         </div>
 
-        <p className="pb-2 px-4 text-center text-xs font-normal tracking-[-0.01em] text-[var(--ink-muted)] sm:text-sm">
+        {items.length === 0 ? (
+          <div className="relative z-10 mt-4 rounded-2xl border border-black/10 bg-white/95 px-5 py-3 text-sm text-[var(--ink-muted)]">
+            Belum ada media dokumentasi yang dimuat.
+          </div>
+        ) : (
+          <ul className="orbit-list">
+            {items.map((item) => (
+              <MediaCard
+                key={item.id}
+                item={item}
+                isLightboxSource={activeItemId === item.id}
+                isLazy={item.index >= MOBILE_INITIAL_EAGER_COUNT}
+                registerCard={registerCard}
+                onSelect={onSelectMedia}
+              />
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3 px-4 text-center">
+        <p className="text-xs font-normal tracking-[-0.01em] text-[var(--ink-muted)] sm:text-sm">
           {reducedMotion
-            ? 'Mode gerak minimal aktif · Seret untuk memutar atau klik foto untuk melihat detail'
-            : 'Seret bola foto untuk memutar · Klik salah satu foto untuk pratinjau penuh'}
+            ? 'Mode gerak minimal · Seret untuk memutar atau klik foto'
+            : 'Seret untuk memutar · Klik foto untuk memperbesar'}
         </p>
-      </section>
-    </main>
+
+        <a
+          href="#tentang-kami"
+          aria-label="Gulir ke Tentang Kami"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-black/10 text-xs font-medium text-[var(--ink-secondary)] transition-colors hover:bg-black/5 hover:text-[var(--ink-primary)]"
+        >
+          <span aria-hidden="true">↓</span>
+        </a>
+      </div>
+    </section>
   );
 }
