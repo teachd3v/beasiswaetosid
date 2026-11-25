@@ -1,43 +1,78 @@
 import { useState } from 'react';
 import type { SectionId } from '../hooks/useActiveSection';
+import type { AppRoute } from '../hooks/useRoute';
 
 interface NavbarProps {
-  readonly isHome: boolean;
+  readonly routeKind: AppRoute['kind'];
   readonly activeSection: SectionId;
-  readonly isOrbitPaused: boolean;
-  readonly onToggleOrbit: () => void;
   readonly onNavigate: (to: string) => void;
-  readonly reducedMotion: boolean;
 }
 
-const NAV_LINKS: readonly { readonly id: SectionId; readonly label: string }[] = [
-  { id: 'top', label: 'Beranda' },
-  { id: 'tentang-kami', label: 'Tentang Kami' },
-  { id: 'program', label: 'Program' },
-  { id: 'testimoni', label: 'Testimoni' },
-  { id: 'berita', label: 'Berita' },
-  { id: 'faq', label: 'FAQ' },
+type NavEntry =
+  | { readonly kind: 'section'; readonly id: SectionId; readonly label: string }
+  | { readonly kind: 'page'; readonly path: string; readonly routeKey: AppRoute['kind']; readonly label: string };
+
+const NAV_ENTRIES: readonly NavEntry[] = [
+  { kind: 'section', id: 'top', label: 'Beranda' },
+  { kind: 'section', id: 'tentang-kami', label: 'Tentang Kami' },
+  { kind: 'section', id: 'program', label: 'Program' },
+  { kind: 'page', path: '/etoser', routeKey: 'etoser', label: 'Etoser' },
+  { kind: 'section', id: 'testimoni', label: 'Testimoni' },
+  { kind: 'section', id: 'berita', label: 'Berita' },
+  { kind: 'section', id: 'faq', label: 'FAQ' },
 ];
 
 export function Navbar({
-  isHome,
+  routeKind,
   activeSection,
-  isOrbitPaused,
-  onToggleOrbit,
   onNavigate,
-  reducedMotion,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isHome = routeKind === 'home';
 
-  const handleSectionClick = (
+  const handleEntryClick = (
     event: React.MouseEvent<HTMLAnchorElement>,
-    id: SectionId,
+    entry: NavEntry,
   ) => {
     setMobileMenuOpen(false);
+    if (
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      event.button !== 0
+    ) {
+      return;
+    }
+
+    if (entry.kind === 'page') {
+      event.preventDefault();
+      onNavigate(entry.path);
+      return;
+    }
+
     if (!isHome) {
       event.preventDefault();
-      onNavigate(id === 'top' ? '/' : `/#${id}`);
+      onNavigate(entry.id === 'top' ? '/' : `/#${entry.id}`);
     }
+  };
+
+  const isEntryActive = (entry: NavEntry): boolean => {
+    if (entry.kind === 'page') {
+      return routeKind === entry.routeKey;
+    }
+    if (isHome) {
+      return activeSection === entry.id;
+    }
+    return (
+      (routeKind === 'news-list' || routeKind === 'news-detail') &&
+      entry.id === 'berita'
+    );
+  };
+
+  const getEntryHref = (entry: NavEntry): string => {
+    if (entry.kind === 'page') return entry.path;
+    return isHome ? `#${entry.id}` : entry.id === 'top' ? '/' : `/#${entry.id}`;
   };
 
   return (
@@ -49,7 +84,7 @@ export function Navbar({
         <a
           href={isHome ? '#top' : '/'}
           aria-label="ETOS ID - ke awal halaman"
-          onClick={(event) => handleSectionClick(event, 'top')}
+          onClick={(event) => handleEntryClick(event, NAV_ENTRIES[0])}
           className="inline-flex min-h-11 items-center rounded-lg px-1"
         >
           <img
@@ -62,55 +97,35 @@ export function Navbar({
         </a>
 
         <ul className="hidden items-center gap-0.5 rounded-full border border-[var(--surface-pill-border)] bg-white/75 p-1 lg:flex">
-          {NAV_LINKS.map((link) => {
-            const isActive = isHome
-              ? activeSection === link.id
-              : link.id === 'berita';
-            const href = isHome ? `#${link.id}` : link.id === 'top' ? '/' : `/#${link.id}`;
+          {NAV_ENTRIES.map((entry) => {
+            const isActive = isEntryActive(entry);
             return (
-              <li key={link.id}>
+              <li key={entry.label}>
                 <a
-                  href={href}
+                  href={getEntryHref(entry)}
                   aria-current={isActive ? 'page' : undefined}
-                  onClick={(event) => handleSectionClick(event, link.id)}
-                  className={`inline-flex min-h-9 items-center whitespace-nowrap rounded-full px-3.5 text-sm font-medium transition-colors ${
+                  onClick={(event) => handleEntryClick(event, entry)}
+                  className={`inline-flex min-h-9 items-center whitespace-nowrap rounded-full px-3 text-sm font-medium transition-colors xl:px-3.5 ${
                     isActive
                       ? 'bg-[var(--brand-green-dark)] text-white'
                       : 'text-[var(--ink-secondary)] hover:bg-black/5 hover:text-[var(--ink-primary)]'
                   }`}
                 >
-                  {link.label}
+                  {entry.label}
                 </a>
               </li>
             );
           })}
         </ul>
 
-        <div className="flex shrink-0 items-center gap-2">
-          {isHome && !reducedMotion && (
-            <button
-              type="button"
-              onClick={onToggleOrbit}
-              aria-pressed={isOrbitPaused}
-              className="inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border border-[var(--surface-pill-border)] bg-white/90 px-3 py-2 text-xs font-medium text-[var(--ink-primary)] transition-colors hover:bg-neutral-100 sm:gap-2 sm:px-4 sm:text-sm"
-            >
-              <span
-                aria-hidden="true"
-                className={`h-2 w-2 rounded-full ${
-                  isOrbitPaused ? 'bg-neutral-400' : 'bg-[var(--brand-green)]'
-                }`}
-              />
-              <span>{isOrbitPaused ? 'Putar Orbit' : 'Jeda Orbit'}</span>
-            </button>
-          )}
-
+        <div className="flex shrink-0 items-center lg:hidden">
           <button
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-section-nav"
             aria-label={mobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-[var(--surface-pill-border)] bg-white/90 text-sm font-medium text-[var(--ink-primary)] transition-colors hover:bg-neutral-100 lg:hidden"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-[var(--surface-pill-border)] bg-white/90 text-sm font-medium text-[var(--ink-primary)] transition-colors hover:bg-neutral-100"
           >
             <span aria-hidden="true">{mobileMenuOpen ? '✕' : '☰'}</span>
           </button>
@@ -123,24 +138,21 @@ export function Navbar({
           className="border-t border-black/6 bg-white/95 px-4 py-3 lg:hidden"
         >
           <ul className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => {
-              const isActive = isHome
-                ? activeSection === link.id
-                : link.id === 'berita';
-              const href = isHome ? `#${link.id}` : link.id === 'top' ? '/' : `/#${link.id}`;
+            {NAV_ENTRIES.map((entry) => {
+              const isActive = isEntryActive(entry);
               return (
-                <li key={link.id}>
+                <li key={entry.label}>
                   <a
-                    href={href}
+                    href={getEntryHref(entry)}
                     aria-current={isActive ? 'page' : undefined}
-                    onClick={(event) => handleSectionClick(event, link.id)}
+                    onClick={(event) => handleEntryClick(event, entry)}
                     className={`flex min-h-11 items-center rounded-xl px-3.5 text-sm font-medium transition-colors ${
                       isActive
                         ? 'bg-[var(--brand-mint)] text-[var(--brand-green-dark)]'
                         : 'text-[var(--ink-secondary)] hover:bg-black/5'
                     }`}
                   >
-                    {link.label}
+                    {entry.label}
                   </a>
                 </li>
               );

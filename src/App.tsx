@@ -13,6 +13,7 @@ import type { ShowcaseMediaItem } from './data/mediaItems';
 import { useActiveSection } from './hooks/useActiveSection';
 import { useReducedMotion } from './hooks/useReducedMotion';
 import { useRoute } from './hooks/useRoute';
+import { EtoserCatalogPage } from './pages/EtoserCatalogPage';
 import { NewsDetailPage } from './pages/NewsDetailPage';
 import { NewsListPage } from './pages/NewsListPage';
 
@@ -21,7 +22,6 @@ export function App() {
   const isHome = route.kind === 'home';
   const reducedMotion = useReducedMotion();
   const activeSection = useActiveSection(isHome);
-  const [isOrbitPaused, setIsOrbitPaused] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
   const pendingReturnIndexRef = useRef<number | null>(null);
@@ -87,12 +87,9 @@ export function App() {
   return (
     <div className="flex min-h-dvh flex-col bg-[var(--bg-canvas)] text-[var(--ink-primary)]">
       <Navbar
-        isHome={isHome}
+        routeKind={route.kind}
         activeSection={activeSection}
-        isOrbitPaused={isOrbitPaused}
-        onToggleOrbit={() => setIsOrbitPaused((prev) => !prev)}
         onNavigate={navigate}
-        reducedMotion={reducedMotion}
       />
 
       {route.kind === 'home' && (
@@ -100,7 +97,7 @@ export function App() {
           <MediaGlobeStage
             items={SHOWCASE_MEDIA_ITEMS}
             activeItemId={activeItem?.id ?? null}
-            isPaused={isOrbitPaused}
+            isPaused={false}
             reducedMotion={reducedMotion}
             onSelectMedia={handleSelectMedia}
           />
@@ -111,6 +108,10 @@ export function App() {
           <NewsSection onNavigate={navigate} />
           <FaqSection />
         </main>
+      )}
+
+      {route.kind === 'etoser' && (
+        <EtoserCatalogPage onNavigate={navigate} reducedMotion={reducedMotion} />
       )}
 
       {route.kind === 'news-list' && <NewsListPage onNavigate={navigate} />}

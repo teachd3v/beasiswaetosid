@@ -289,6 +289,30 @@
   display: none;
 }
 
+.etoser-tilt-card {
+  transform-style: preserve-3d;
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.25s ease,
+    box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+@keyframes drawerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.drawer-panel {
+  animation: drawerSlideIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -298,8 +322,13 @@
   .orbit-card img,
   .editorial-card,
   .flip-card-inner,
-  .faq-accordion-content {
+  .faq-accordion-content,
+  .etoser-tilt-card {
     transition: none;
+  }
+
+  .drawer-panel {
+    animation: none;
   }
 
   .hero-glow-title {

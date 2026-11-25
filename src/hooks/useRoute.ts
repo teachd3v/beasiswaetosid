@@ -2,11 +2,15 @@ import { useCallback, useEffect, useState } from 'react';
 
 export type AppRoute =
   | { readonly kind: 'home' }
+  | { readonly kind: 'etoser' }
   | { readonly kind: 'news-list' }
   | { readonly kind: 'news-detail'; readonly slug: string };
 
 function parsePathname(pathname: string): AppRoute {
   const clean = pathname.replace(/\/+$/, '') || '/';
+  if (clean === '/etoser') {
+    return { kind: 'etoser' };
+  }
   if (clean === '/berita') {
     return { kind: 'news-list' };
   }
