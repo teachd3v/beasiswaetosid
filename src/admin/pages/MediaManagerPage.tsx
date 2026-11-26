@@ -1,50 +1,39 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { mediaApi } from '../../services/adminApi';
-import type { AdminMediaItem } from '../../services/adminApi';
-import { ImageUploadField } from '../components/ImageUploadField';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  deleteMediaLibraryObject,
+  listMediaLibrary,
+  uploadAdminImage,
+} from '../../services/adminApi';
+import type { MediaFolder, MediaLibraryItem } from '../../services/adminApi';
 
-const HERO_MAX_DESKTOP = 25;
-const HERO_MAX_MOBILE = 15;
-
-interface MediaFormState {
-  id?: string;
-  title: string;
-  timestampLabel: string;
-  alt: string;
-  r2Key: string;
-  previewUrl: string;
-  width: number;
-  height: number;
-  sortOrder: number;
-  isPublished: boolean;
-}
-
-const EMPTY_FORM: MediaFormState = {
-  title: '',
-  timestampLabel: 'Youth Inspiration Camp ETOS ID 2026',
-  alt: '',
-  r2Key: '',
-  previewUrl: '',
-  width: 1600,
-  height: 900,
-  sortOrder: 0,
-  isPublished: true,
-};
+const FOLDER_OPTIONS: readonly { id: 'all' | MediaFolder; label: string }[] = [
+  { id: 'all', label: 'Semua' },
+  { id: 'showcase', label: 'Showcase' },
+  { id: 'news', label: 'Berita' },
+  { id: 'etoser', label: 'Etoser' },
+  { id: 'testimonials', label: 'Testimoni' },
+  { id: 'team', label: 'Tim Kami' },
+];
 
 export function MediaManagerPage() {
-  const [items, setItems] = useState<AdminMediaItem[]>([]);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [items, setItems] = useState<MediaLibraryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadFolder, setUploadFolder] = useState<MediaFolder>('showcase');
+  const [folderFilter, setFolderFilter] = useState<'all' | MediaFolder>('all');
+  const [query, setQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<MediaFormState | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [previewItem, setPreviewItem] = useState<MediaLibraryItem | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const data = await mediaApi.list();
+      const data = await listMediaLibrary();
       setItems(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal memuat data media');
+      setError(err instanceof Error ? err.message : 'Gagal memuat galeri media');
     } finally {
       setLoading(false);
     }
@@ -52,8 +41,7 @@ export function MediaManagerPage() {
 
   useEffect(() => {
     let active = true;
-    void mediaApi
-      .list()
+    void listMediaLibrary()
       .then((data) => {
         if (active) {
           setItems(data);
@@ -61,7 +49,7 @@ export function MediaManagerPage() {
         }
       })
       .catch((err) => {
-        if (active) setError(err instanceof Error ? err.message : 'Gagal memuat data media');
+        if (active) setError(err instanceof Error ? err.message : 'Gagal memuat galeri media');
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -71,97 +59,56 @@ export function MediaManagerPage() {
     };
   }, []);
 
-  const heroMeta = useMemo(() => {
-    const publishedRank = new Map<string, number>();
-    let rank = 0;
-    for (const item of items) {
-      if (item.isPublished) {
-        rank += 1;
-        publishedRank.set(item.id, rank);
-      }
-    }
-    return {
-      publishedRank,
-      totalPublished: rank,
-      activeDesktop: Math.min(rank, HERO_MAX_DESKTOP),
-      activeMobile: Math.min(rank, HERO_MAX_MOBILE),
-    };
-  }, [items]);
-
-  const openCreate = () => {
-    setForm({ ...EMPTY_FORM, sortOrder: items.length + 1 });
-  };
-
-  const openEdit = (item: AdminMediaItem) => {
-    setForm({
-      id: item.id,
-      title: item.title,
-      timestampLabel: item.timestampLabel,
-      alt: item.alt,
-      r2Key: item.r2Key,
-      previewUrl: item.url,
-      width: item.width,
-      height: item.height,
-      sortOrder: item.sortOrder,
-      isPublished: item.isPublished,
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return items.filter((item) => {
+      if (folderFilter !== 'all' && item.folder !== folderFilter) return false;
+      if (!q) return true;
+      return (
+        item.label.toLowerCase().includes(q) ||
+        item.key.toLowerCase().includes(q) ||
+        item.folder.toLowerCase().includes(q)
+      );
     });
-  };
+  }, [items, folderFilter, query]);
 
-  const handleTogglePublished = async (item: AdminMediaItem) => {
-    try {
-      await mediaApi.update(item.id, {
-        title: item.title,
-        timestampLabel: item.timestampLabel,
-        alt: item.alt,
-        r2Key: item.r2Key,
-        width: item.width,
-        height: item.height,
-        sortOrder: item.sortOrder,
-        isPublished: !item.isPublished,
-      });
-      await load();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal mengubah status tampil');
-    }
-  };
-
-  const handleSave = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!form) return;
-    setSaving(true);
+  const handleUploadFiles = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
     setError(null);
     try {
-      const payload = {
-        title: form.title,
-        timestampLabel: form.timestampLabel,
-        alt: form.alt || form.title,
-        r2Key: form.r2Key,
-        width: Number(form.width) || 1600,
-        height: Number(form.height) || 900,
-        sortOrder: Number(form.sortOrder) || 0,
-        isPublished: form.isPublished,
-      };
-      if (form.id) {
-        await mediaApi.update(form.id, payload);
-      } else {
-        await mediaApi.create(payload);
+      for (const file of Array.from(files)) {
+        await uploadAdminImage(file, uploadFolder);
       }
-      setForm(null);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menyimpan media');
+      setError(err instanceof Error ? err.message : 'Gagal mengunggah gambar ke R2');
     } finally {
-      setSaving(false);
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = '';
     }
   };
 
-  const handleDelete = async (item: AdminMediaItem) => {
-    if (!window.confirm(`Hapus foto "${item.title}"?`)) return;
+  const handleCopy = async (item: MediaLibraryItem) => {
     try {
-      await mediaApi.remove(item.id);
+      await navigator.clipboard.writeText(item.url);
+      setCopiedKey(item.key);
+      window.setTimeout(() => setCopiedKey(null), 1500);
+    } catch {
+      // ignore clipboard errors
+    }
+  };
+
+  const handleDelete = async (item: MediaLibraryItem) => {
+    if (!window.confirm(`Hapus file "${item.label}" permanen dari bucket R2?`)) return;
+    setError(null);
+    try {
+      await deleteMediaLibraryObject(item.key);
+      if (previewItem?.key === item.key) setPreviewItem(null);
       await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal menghapus media');
+      setError(err instanceof Error ? err.message : 'Gagal menghapus file R2');
     }
   };
 
@@ -169,36 +116,71 @@ export function MediaManagerPage() {
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-neutral-900">Hero Showcase (3D Media Globe)</h1>
+          <h1 className="text-lg font-bold text-neutral-900">Galeri Media Foto (R2 Storage)</h1>
           <p className="text-xs text-neutral-500">
-            Atur foto event yang tampil di Hero: urutan 1–15 aktif di <strong>HP & Desktop</strong>,
-            urutan 16–25 khusus <strong>Desktop</strong> (maks. 25 foto).
+            Pustaka semua file gambar ({items.length} file). Bisa dipilih ulang di Hero 3D, Berita,
+            Etoser, Testimoni, dan Tim Kami.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openCreate}
-          className="rounded-xl bg-[var(--brand-green-dark)] px-3.5 py-2 text-xs font-semibold text-white hover:opacity-95"
-        >
-          + Tambah Foto Hero
-        </button>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={uploadFolder}
+            onChange={(e) => setUploadFolder(e.target.value as MediaFolder)}
+            aria-label="Folder tujuan upload"
+            className="rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
+          >
+            <option value="showcase">Folder: showcase</option>
+            <option value="news">Folder: news</option>
+            <option value="etoser">Folder: etoser</option>
+            <option value="testimonials">Folder: testimonials</option>
+            <option value="team">Folder: team</option>
+          </select>
+
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            accept="image/webp,image/jpeg,image/png"
+            onChange={handleUploadFiles}
+            className="hidden"
+          />
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => inputRef.current?.click()}
+            className="rounded-xl bg-[var(--brand-green-dark)] px-3.5 py-2 text-xs font-semibold text-white hover:opacity-95 disabled:opacity-50"
+          >
+            {uploading ? 'Mengompres & Unggah...' : '+ Unggah Foto ke Galeri'}
+          </button>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-xs">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-800">
-          <span className="h-2 w-2 rounded-full bg-emerald-500" />
-          Hero HP: {heroMeta.activeMobile}/{HERO_MAX_MOBILE}
-        </span>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-1 font-semibold text-sky-800">
-          <span className="h-2 w-2 rounded-full bg-sky-500" />
-          Hero Desktop: {heroMeta.activeDesktop}/{HERO_MAX_DESKTOP}
-        </span>
-        <span className="text-neutral-500">
-          Total koleksi: <strong>{items.length}</strong> foto
-          {heroMeta.totalPublished > HERO_MAX_DESKTOP
-            ? ` (${heroMeta.totalPublished - HERO_MAX_DESKTOP} cadangan di luar slot 25)`
-            : ''}
-        </span>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          {FOLDER_OPTIONS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setFolderFilter(f.id)}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                folderFilter === f.id
+                  ? 'bg-neutral-900 text-white'
+                  : 'border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Cari nama file / folder..."
+          className="rounded-xl border border-neutral-300 bg-white px-3 py-1.5 text-xs"
+        />
       </div>
 
       {error && (
@@ -208,201 +190,100 @@ export function MediaManagerPage() {
       )}
 
       {loading ? (
-        <p className="py-10 text-center text-sm text-neutral-500">Memuat media...</p>
+        <p className="py-10 text-center text-sm text-neutral-500">Memuat galeri media...</p>
+      ) : filtered.length === 0 ? (
+        <p className="py-10 text-center text-xs text-neutral-500">
+          Tidak ada gambar pada filter ini.
+        </p>
       ) : (
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {items.map((item) => {
-            const rank = heroMeta.publishedRank.get(item.id);
-            const badge = !item.isPublished
-              ? { label: 'Nonaktif', cls: 'bg-neutral-800/85 text-white' }
-              : rank && rank <= HERO_MAX_MOBILE
-                ? { label: `#${rank} HP+Web`, cls: 'bg-emerald-600/95 text-white' }
-                : rank && rank <= HERO_MAX_DESKTOP
-                  ? { label: `#${rank} Web`, cls: 'bg-sky-600/95 text-white' }
-                  : { label: 'Cadangan', cls: 'bg-amber-600/95 text-white' };
-
-            return (
-              <article
-                key={item.id}
-                className={`flex flex-col overflow-hidden rounded-xl border bg-white shadow-2xs ${
-                  item.isPublished ? 'border-neutral-200' : 'border-neutral-200/70 opacity-75'
-                }`}
+          {filtered.map((item) => (
+            <article
+              key={item.key}
+              className="flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-2xs"
+            >
+              <button
+                type="button"
+                onClick={() => setPreviewItem(item)}
+                className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-neutral-100 text-left"
               >
-                <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-neutral-100">
-                  <img
-                    src={item.url}
-                    alt={item.alt}
-                    loading="lazy"
-                    className="absolute inset-0 h-full w-full object-cover object-center"
-                  />
-                  <span
-                    className={`absolute left-1.5 top-1.5 z-10 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${badge.cls}`}
-                  >
-                    {badge.label}
-                  </span>
+                <img
+                  src={item.url}
+                  alt={item.label}
+                  loading="lazy"
+                  className="absolute inset-0 h-full w-full object-cover object-center transition-transform hover:scale-105"
+                />
+                <span className="absolute left-1.5 top-1.5 z-10 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white">
+                  {item.folder}
+                </span>
+              </button>
+              <div className="flex flex-1 flex-col justify-between p-2">
+                <p className="truncate text-[10.5px] font-semibold text-neutral-800" title={item.label}>
+                  {item.label}
+                </p>
+                <div className="mt-2 flex gap-1">
                   <button
                     type="button"
-                    onClick={() => void handleTogglePublished(item)}
-                    title={item.isPublished ? 'Nonaktifkan dari Hero' : 'Aktifkan ke Hero'}
-                    className="absolute right-1.5 top-1.5 z-10 rounded-full bg-white/90 px-1.5 py-0.5 text-[9px] font-bold text-neutral-700 shadow-2xs hover:bg-white"
+                    onClick={() => void handleCopy(item)}
+                    className="flex-1 rounded-md border border-neutral-200 py-1 text-[10px] font-semibold text-neutral-700 hover:bg-neutral-50"
                   >
-                    {item.isPublished ? 'ON' : 'OFF'}
+                    {copiedKey === item.key ? 'Disalin!' : 'Salin URL'}
                   </button>
-                </div>
-                <div className="flex flex-1 flex-col justify-between p-2">
-                  <div>
-                    <h2 className="truncate text-[11px] font-bold text-neutral-900" title={item.title}>
-                      {item.title}
-                    </h2>
-                    <p className="truncate text-[10px] text-neutral-500" title={item.timestampLabel}>
-                      {item.timestampLabel}
-                    </p>
-                  </div>
-                  <div className="mt-2 flex gap-1">
+                  {item.source === 'r2' && (
                     <button
                       type="button"
-                      onClick={() => openEdit(item)}
-                      className="flex-1 rounded-md border border-neutral-200 py-1 text-[10px] font-semibold text-neutral-700 hover:bg-neutral-50"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(item)}
+                      onClick={() => void handleDelete(item)}
                       className="rounded-md border border-red-200 px-2 py-1 text-[10px] font-semibold text-red-600 hover:bg-red-50"
                     >
                       Hapus
                     </button>
-                  </div>
+                  )}
                 </div>
-              </article>
-            );
-          })}
+              </div>
+            </article>
+          ))}
         </div>
       )}
 
-      {form && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-xl">
-            <h2 className="text-base font-bold text-neutral-900">
-              {form.id ? 'Edit Media Hero' : 'Tambah Media Hero'}
-            </h2>
-            <form onSubmit={handleSave} className="mt-4 space-y-3">
-              <ImageUploadField
-                label="Gambar Showcase Hero"
-                folder="showcase"
-                valueKey={form.r2Key}
-                previewUrl={form.previewUrl}
-                onChange={({ key, url, width, height }) =>
-                  setForm((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          r2Key: key,
-                          previewUrl: url,
-                          width: width ?? prev.width,
-                          height: height ?? prev.height,
-                        }
-                      : prev,
-                  )
-                }
+      {previewItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setPreviewItem(null)}
+        >
+          <div
+            className="max-h-[90dvh] w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-neutral-900">{previewItem.label}</p>
+                <p className="truncate text-[11px] text-neutral-500">{previewItem.key}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewItem(null)}
+                className="rounded-lg border border-neutral-200 px-2.5 py-1 text-xs font-semibold text-neutral-600"
+              >
+                Tutup
+              </button>
+            </div>
+            <div className="flex max-h-[65dvh] items-center justify-center bg-neutral-100 p-4">
+              <img
+                src={previewItem.url}
+                alt={previewItem.label}
+                className="max-h-[60dvh] max-w-full rounded-lg object-contain"
               />
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700">Judul</label>
-                <input
-                  type="text"
-                  required
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700">
-                  Label Event / Kegiatan
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={form.timestampLabel}
-                  onChange={(e) => setForm({ ...form, timestampLabel: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700">
-                  Alt Text (Aksesibilitas & SEO)
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={form.alt}
-                  onChange={(e) => setForm({ ...form, alt: e.target.value })}
-                  className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-700">Width</label>
-                  <input
-                    type="number"
-                    value={form.width}
-                    onChange={(e) => setForm({ ...form, width: Number(e.target.value) })}
-                    className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-700">Height</label>
-                  <input
-                    type="number"
-                    value={form.height}
-                    onChange={(e) => setForm({ ...form, height: Number(e.target.value) })}
-                    className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-neutral-700">
-                    Urutan (1–15 HP)
-                  </label>
-                  <input
-                    type="number"
-                    value={form.sortOrder}
-                    onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
-                    className="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-
-              <label className="flex items-center gap-2 text-xs font-semibold text-neutral-700">
-                <input
-                  type="checkbox"
-                  checked={form.isPublished}
-                  onChange={(e) => setForm({ ...form, isPublished: e.target.checked })}
-                />
-                Aktifkan di Hero Showcase (Published)
-              </label>
-
-              <div className="flex justify-end gap-2 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setForm(null)}
-                  className="rounded-lg border border-neutral-200 px-4 py-2 text-xs font-semibold text-neutral-700"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-lg bg-[var(--brand-green-dark)] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
-                >
-                  {saving ? 'Menyimpan...' : 'Simpan'}
-                </button>
-              </div>
-            </form>
+            </div>
+            <div className="flex items-center justify-between gap-2 border-t border-neutral-200 px-4 py-3">
+              <code className="truncate text-[11px] text-neutral-600">{previewItem.url}</code>
+              <button
+                type="button"
+                onClick={() => void handleCopy(previewItem)}
+                className="shrink-0 rounded-lg bg-[var(--brand-green-dark)] px-3 py-1.5 text-xs font-semibold text-white"
+              >
+                {copiedKey === previewItem.key ? 'URL Disalin!' : 'Salin URL'}
+              </button>
+            </div>
           </div>
         </div>
       )}

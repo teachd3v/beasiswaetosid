@@ -5,6 +5,7 @@ import {
   ALLOWED_MIME_TYPES,
   MAX_UPLOAD_BYTES,
   buildR2Key,
+  isManagedR2Key,
   resolveMediaUrl,
 } from '../lib/media.ts';
 import type { AppEnv } from '../types.ts';
@@ -98,6 +99,35 @@ mediaAdminRoutes.get('/media-library', async (c) => {
   }
 
   return c.json(Array.from(seen.values()));
+});
+
+// DELETE /api/admin/media-library?key=<r2_key> -> Hapus objek R2 jika tidak sedang dipakai di D1
+mediaAdminRoutes.delete('/media-library', async (c) => {
+  const key = c.req.query('key')?.trim();
+  if (!key || !isManagedR2Key(key)) {
+    return c.json({ error: 'Hanya file yang tersimpan di R2 yang dapat dihapus dari galeri.' }, 400);
+  }
+
+  const refCheck = await c.env.DB.prepare(
+    `SELECT
+      (SELECT COUNT(*) FROM media_items WHERE r2_key = ?) +
+      (SELECT COUNT(*) FROM etosers WHERE photo_r2_key = ?) +
+      (SELECT COUNT(*) FROM news WHERE cover_r2_key = ?) +
+      (SELECT COUNT(*) FROM testimonials WHERE photo_r2_key = ?) +
+      (SELECT COUNT(*) FROM team_members WHERE photo_r2_key = ?) AS total_refs`,
+  )
+    .bind(key, key, key, key, key)
+    .first<{ total_refs: number }>();
+
+  if ((refCheck?.total_refs ?? 0) > 0) {
+    return c.json(
+      { error: 'Foto masih dipakai di konten aktif (Hero/Berita/Etoser/Testimoni/Tim). Lepas dulu sebelum menghapus.' },
+      409,
+    );
+  }
+
+  await c.env.MEDIA_BUCKET.delete(key);
+  return c.json({ ok: true });
 });
 
 // POST /api/admin/upload (multipart/form-data: file, folder)

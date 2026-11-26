@@ -3,13 +3,14 @@ import { getCurrentAdmin, logoutAdmin } from '../services/adminApi';
 import type { AdminUser } from '../services/adminApi';
 import { applyClientSeo } from '../lib/seo';
 import { EtoserManagerPage } from './pages/EtoserManagerPage';
+import { HeroShowcaseManagerPage } from './pages/HeroShowcaseManagerPage';
 import { LoginPage } from './pages/LoginPage';
 import { MediaManagerPage } from './pages/MediaManagerPage';
 import { NewsManagerPage } from './pages/NewsManagerPage';
 import { TeamManagerPage } from './pages/TeamManagerPage';
 import { TestimonialsManagerPage } from './pages/TestimonialsManagerPage';
 
-type AdminTab = 'media' | 'etosers' | 'news' | 'testimonials' | 'team';
+type AdminTab = 'hero' | 'media' | 'etosers' | 'news' | 'testimonials' | 'team';
 
 interface NavItem {
   readonly id: AdminTab;
@@ -17,6 +18,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: readonly NavItem[] = [
+  { id: 'hero', label: 'Hero 3D' },
   { id: 'media', label: 'Media Foto' },
   { id: 'etosers', label: 'Data Etoser' },
   { id: 'news', label: 'Berita' },
@@ -26,6 +28,14 @@ const NAV_ITEMS: readonly NavItem[] = [
 
 function NavIcon({ id }: { readonly id: AdminTab }) {
   switch (id) {
+    case 'hero':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5 shrink-0">
+          <circle cx="12" cy="12" r="9" />
+          <ellipse cx="12" cy="12" rx="4" ry="9" />
+          <path d="M3.6 9h16.8M3.6 15h16.8" strokeLinecap="round" />
+        </svg>
+      );
     case 'media':
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5 shrink-0">
@@ -72,6 +82,7 @@ function NavIcon({ id }: { readonly id: AdminTab }) {
 function parseTab(subPath: string): AdminTab {
   const clean = subPath.replace(/^\/+/, '').split('/')[0];
   if (
+    clean === 'hero' ||
     clean === 'media' ||
     clean === 'etosers' ||
     clean === 'news' ||
@@ -80,7 +91,7 @@ function parseTab(subPath: string): AdminTab {
   ) {
     return clean;
   }
-  return 'media';
+  return 'hero';
 }
 
 interface AdminAppProps {
@@ -141,7 +152,6 @@ export default function AdminApp({ subPath, onNavigate }: AdminAppProps) {
 
   return (
     <div className="flex min-h-dvh bg-neutral-100 text-neutral-900">
-      {/* Mobile backdrop */}
       {mobileOpen && (
         <button
           type="button"
@@ -151,13 +161,11 @@ export default function AdminApp({ subPath, onNavigate }: AdminAppProps) {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-neutral-200 bg-white transition-all duration-200 lg:sticky lg:top-0 lg:h-dvh ${
           collapsed ? 'lg:w-[72px]' : 'lg:w-60'
         } ${mobileOpen ? 'w-60 translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
-        {/* Logo + Collapse Toggle */}
         <div
           className={`flex h-14 items-center border-b border-neutral-100 px-3 ${
             collapsed ? 'justify-center' : 'justify-between'
@@ -167,7 +175,7 @@ export default function AdminApp({ subPath, onNavigate }: AdminAppProps) {
             href="/admin"
             onClick={(e) => {
               e.preventDefault();
-              handleSelectTab('media');
+              handleSelectTab('hero');
             }}
             className="flex items-center gap-2.5 overflow-hidden"
             title="CMS Beasiswa ETOS ID"
@@ -196,7 +204,6 @@ export default function AdminApp({ subPath, onNavigate }: AdminAppProps) {
           )}
         </div>
 
-        {/* Navigation */}
         <nav aria-label="Menu Admin CMS" className="flex-1 space-y-1 p-2.5">
           {NAV_ITEMS.map((item) => {
             const active = item.id === activeTab;
@@ -221,7 +228,6 @@ export default function AdminApp({ subPath, onNavigate }: AdminAppProps) {
           })}
         </nav>
 
-        {/* Bottom actions */}
         <div className="space-y-1 border-t border-neutral-100 p-2.5">
           {collapsed && (
             <button
@@ -269,7 +275,6 @@ export default function AdminApp({ subPath, onNavigate }: AdminAppProps) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 sm:px-6">
           <div className="flex items-center gap-3">
@@ -305,6 +310,7 @@ export default function AdminApp({ subPath, onNavigate }: AdminAppProps) {
         </header>
 
         <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-5 sm:px-6">
+          {activeTab === 'hero' && <HeroShowcaseManagerPage />}
           {activeTab === 'media' && <MediaManagerPage />}
           {activeTab === 'etosers' && <EtoserManagerPage />}
           {activeTab === 'news' && <NewsManagerPage />}

@@ -151,6 +151,12 @@ export async function listMediaLibrary(): Promise<MediaLibraryItem[]> {
   return apiRequest<MediaLibraryItem[]>('/api/admin/media-library');
 }
 
+export async function deleteMediaLibraryObject(key: string): Promise<void> {
+  await apiRequest<{ ok: boolean }>(`/api/admin/media-library?key=${encodeURIComponent(key)}`, {
+    method: 'DELETE',
+  });
+}
+
 /**
  * Resize & konversi gambar ke WebP di browser sebelum diunggah ke Cloudflare R2.
  */
