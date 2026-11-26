@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { AboutSection } from './components/AboutSection';
 import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
@@ -17,16 +17,33 @@ import { EtoserCatalogPage } from './pages/EtoserCatalogPage';
 import { NewsDetailPage } from './pages/NewsDetailPage';
 import { NewsListPage } from './pages/NewsListPage';
 import { TeamPage } from './pages/TeamPage';
+import { fetchShowcaseMedia } from './services/cmsApi';
+
+const AdminApp = lazy(() => import('./admin/AdminApp'));
 
 export function App() {
   const { route, navigate } = useRoute();
   const isHome = route.kind === 'home';
+  const isAdmin = route.kind === 'admin';
   const reducedMotion = useReducedMotion();
   const activeSection = useActiveSection(isHome);
+  const [mediaItems, setMediaItems] =
+    useState<readonly ShowcaseMediaItem[]>(SHOWCASE_MEDIA_ITEMS);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
   const pendingReturnIndexRef = useRef<number | null>(null);
   const lastTriggerRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (isAdmin) return;
+    const controller = new AbortController();
+    void fetchShowcaseMedia(controller.signal).then((items) => {
+      if (!controller.signal.aborted) {
+        setMediaItems(items);
+      }
+    });
+    return () => controller.abort();
+  }, [isAdmin]);
 
   useEffect(() => {
     if (isHome) {
@@ -35,7 +52,7 @@ export function App() {
   }, [isHome]);
 
   const activeItem: ShowcaseMediaItem | null =
-    isHome && selectedIndex !== null ? (SHOWCASE_MEDIA_ITEMS[selectedIndex] ?? null) : null;
+    isHome && selectedIndex !== null ? (mediaItems[selectedIndex] ?? null) : null;
 
   useEffect(() => {
     if (selectedIndex !== null || pendingReturnIndexRef.current === null) return;
@@ -73,17 +90,31 @@ export function App() {
 
   const handlePrev = useCallback(() => {
     setSelectedIndex((prev) => {
-      if (prev === null) return null;
-      return (prev - 1 + SHOWCASE_MEDIA_ITEMS.length) % SHOWCASE_MEDIA_ITEMS.length;
+      if (prev === null || mediaItems.length === 0) return null;
+      return (prev - 1 + mediaItems.length) % mediaItems.length;
     });
-  }, []);
+  }, [mediaItems.length]);
 
   const handleNext = useCallback(() => {
     setSelectedIndex((prev) => {
-      if (prev === null) return null;
-      return (prev + 1) % SHOWCASE_MEDIA_ITEMS.length;
+      if (prev === null || mediaItems.length === 0) return null;
+      return (prev + 1) % mediaItems.length;
     });
-  }, []);
+  }, [mediaItems.length]);
+
+  if (route.kind === 'admin') {
+    return (
+      <Suspense
+        fallback={
+          <div className="flex min-h-dvh items-center justify-center bg-neutral-50 text-sm text-neutral-600">
+            Memuat panel admin CMS...
+          </div>
+        }
+      >
+        <AdminApp subPath={route.subPath} onNavigate={navigate} />
+      </Suspense>
+    );
+  }
 
   return (
     <div className="flex min-h-dvh flex-col bg-[var(--bg-canvas)] text-[var(--ink-primary)]">
@@ -96,7 +127,7 @@ export function App() {
       {route.kind === 'home' && (
         <main className="flex flex-1 flex-col">
           <MediaGlobeStage
-            items={SHOWCASE_MEDIA_ITEMS}
+            items={mediaItems}
             activeItemId={activeItem?.id ?? null}
             isPaused={false}
             reducedMotion={reducedMotion}
@@ -128,7 +159,7 @@ export function App() {
       <MediaDetailLightbox
         item={activeItem}
         originRect={originRect}
-        totalCount={SHOWCASE_MEDIA_ITEMS.length}
+        totalCount={mediaItems.length}
         reducedMotion={reducedMotion}
         onClose={handleCloseLightbox}
         onPrev={handlePrev}

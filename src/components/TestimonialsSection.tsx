@@ -1,9 +1,22 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ALUMNI_TESTIMONIALS } from '../data/testimonialsData';
+import type { AlumniTestimonial } from '../data/testimonialsData';
+import { fetchTestimonials } from '../services/cmsApi';
 
 export function TestimonialsSection() {
+  const [items, setItems] = useState<readonly AlumniTestimonial[]>(ALUMNI_TESTIMONIALS);
   const [flippedIds, setFlippedIds] = useState<ReadonlySet<string>>(() => new Set());
   const trackRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetchTestimonials(controller.signal).then((data) => {
+      if (!controller.signal.aborted) {
+        setItems(data);
+      }
+    });
+    return () => controller.abort();
+  }, []);
 
   const toggleCard = (id: string) => {
     setFlippedIds((prev) => {
@@ -79,7 +92,7 @@ export function TestimonialsSection() {
           aria-label="Daftar testimoni alumni ETOS ID"
           className="no-scrollbar mt-5 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1 sm:mt-7 sm:gap-4"
         >
-          {ALUMNI_TESTIMONIALS.map((item) => {
+          {items.map((item) => {
             const isFlipped = flippedIds.has(item.id);
             return (
               <button

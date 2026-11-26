@@ -4,23 +4,37 @@ import {
   DEPARTMENT_HEAD,
   REGIONAL_FACILITATORS,
 } from '../data/teamData';
+import { fetchTeamData } from '../services/cmsApi';
+import type { PublicTeamPayload } from '../services/cmsApi';
 
 interface TeamPageProps {
   readonly onNavigate: (to: string) => void;
 }
 
 export function TeamPage({ onNavigate }: TeamPageProps) {
+  const [team, setTeam] = useState<PublicTeamPayload>({
+    departmentHead: DEPARTMENT_HEAD,
+    coreProgramTeam: CORE_PROGRAM_TEAM,
+    regionalFacilitators: REGIONAL_FACILITATORS,
+  });
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     document.title = 'Tim Kami · ETOS ID';
+    const controller = new AbortController();
+    void fetchTeamData(controller.signal).then((data) => {
+      if (!controller.signal.aborted) {
+        setTeam(data);
+      }
+    });
+    return () => controller.abort();
   }, []);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
   const filteredCampuses = useMemo(() => {
-    if (!normalizedQuery) return REGIONAL_FACILITATORS;
-    return REGIONAL_FACILITATORS.filter(
+    if (!normalizedQuery) return team.regionalFacilitators;
+    return team.regionalFacilitators.filter(
       (group) =>
         group.campusShort.toLowerCase().includes(normalizedQuery) ||
         group.campusFull.toLowerCase().includes(normalizedQuery) ||
@@ -28,7 +42,7 @@ export function TeamPage({ onNavigate }: TeamPageProps) {
           f.name.toLowerCase().includes(normalizedQuery),
         ),
     );
-  }, [normalizedQuery]);
+  }, [team.regionalFacilitators, normalizedQuery]);
 
   const handleLinkClick = (
     event: React.MouseEvent<HTMLAnchorElement>,
@@ -71,28 +85,30 @@ export function TeamPage({ onNavigate }: TeamPageProps) {
         {/* Bagan Organisasi: Level 1 & Level 2 */}
         <section aria-label="Struktur pengelola pusat" className="mt-6 sm:mt-8">
           {/* Level 1: Ketua Departemen */}
-          <div className="flex justify-center">
-            <article className="editorial-card w-full max-w-sm overflow-hidden border-[var(--brand-green)]/30 shadow-xs">
-              <div className="flex items-center gap-4 p-4 sm:flex-col sm:p-5 sm:text-center">
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--surface-placeholder)] ring-2 ring-[var(--brand-mint-strong)] sm:h-24 sm:w-24 sm:rounded-full">
-                  <img
-                    src={DEPARTMENT_HEAD.photoSrc}
-                    alt={`Foto ${DEPARTMENT_HEAD.name}`}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+          {team.departmentHead && (
+            <div className="flex justify-center">
+              <article className="editorial-card w-full max-w-sm overflow-hidden border-[var(--brand-green)]/30 shadow-xs">
+                <div className="flex items-center gap-4 p-4 sm:flex-col sm:p-5 sm:text-center">
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--surface-placeholder)] ring-2 ring-[var(--brand-mint-strong)] sm:h-24 sm:w-24 sm:rounded-full">
+                    <img
+                      src={team.departmentHead.photoSrc}
+                      alt={`Foto ${team.departmentHead.name}`}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
 
-                <div className="min-w-0">
-                  <span className="inline-flex rounded-full bg-[var(--brand-green-dark)] px-2.5 py-0.5 text-[10px] font-semibold text-white sm:px-3 sm:py-1 sm:text-xs">
-                    {DEPARTMENT_HEAD.role}
-                  </span>
-                  <h2 className="mt-1.5 text-base font-bold tracking-[-0.02em] text-[var(--ink-primary)] sm:mt-2 sm:text-xl">
-                    {DEPARTMENT_HEAD.name}
-                  </h2>
+                  <div className="min-w-0">
+                    <span className="inline-flex rounded-full bg-[var(--brand-green-dark)] px-2.5 py-0.5 text-[10px] font-semibold text-white sm:px-3 sm:py-1 sm:text-xs">
+                      {team.departmentHead.role}
+                    </span>
+                    <h2 className="mt-1.5 text-base font-bold tracking-[-0.02em] text-[var(--ink-primary)] sm:mt-2 sm:text-xl">
+                      {team.departmentHead.name}
+                    </h2>
+                  </div>
                 </div>
-              </div>
-            </article>
-          </div>
+              </article>
+            </div>
+          )}
 
           {/* Garis penghubung Level 1 -> Level 2 */}
           <div aria-hidden="true" className="flex flex-col items-center">
@@ -102,7 +118,7 @@ export function TeamPage({ onNavigate }: TeamPageProps) {
 
           {/* Level 2: 3 Pengelola Program */}
           <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
-            {CORE_PROGRAM_TEAM.map((member) => (
+            {team.coreProgramTeam.map((member) => (
               <div key={member.id} className="flex flex-col items-center">
                 <div
                   aria-hidden="true"

@@ -5,10 +5,15 @@ export type AppRoute =
   | { readonly kind: 'etoser' }
   | { readonly kind: 'team' }
   | { readonly kind: 'news-list' }
-  | { readonly kind: 'news-detail'; readonly slug: string };
+  | { readonly kind: 'news-detail'; readonly slug: string }
+  | { readonly kind: 'admin'; readonly subPath: string };
 
 function parsePathname(pathname: string): AppRoute {
   const clean = pathname.replace(/\/+$/, '') || '/';
+  if (clean === '/admin' || clean.startsWith('/admin/')) {
+    const subPath = clean.slice('/admin'.length) || '/';
+    return { kind: 'admin', subPath };
+  }
   if (clean === '/etoser') {
     return { kind: 'etoser' };
   }

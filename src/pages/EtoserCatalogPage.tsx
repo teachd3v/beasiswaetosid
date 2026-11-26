@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { EtoserCard } from '../components/EtoserCard';
 import { ETOSER_PROFILES } from '../data/etoserData';
 import type { EtoserProfile } from '../data/etoserData';
+import { fetchEtoserProfiles } from '../services/cmsApi';
 
 interface EtoserCatalogPageProps {
   readonly onNavigate: (to: string) => void;
@@ -19,6 +20,7 @@ export function EtoserCatalogPage({
   onNavigate,
   reducedMotion,
 }: EtoserCatalogPageProps) {
+  const [profiles, setProfiles] = useState<readonly EtoserProfile[]>(ETOSER_PROFILES);
   const [searchQuery, setSearchQuery] = useState('');
   const [openCampuses, setOpenCampuses] = useState<ReadonlySet<string>>(
     () => new Set([ETOSER_PROFILES[0]?.campusShort ?? '']),
@@ -30,13 +32,23 @@ export function EtoserCatalogPage({
 
   useEffect(() => {
     document.title = 'Katalog Profil Etoser · ETOS ID';
+    const controller = new AbortController();
+    void fetchEtoserProfiles(controller.signal).then((data) => {
+      if (!controller.signal.aborted) {
+        setProfiles(data);
+        if (data[0]?.campusShort) {
+          setOpenCampuses((prev) => (prev.size === 0 ? new Set([data[0].campusShort]) : prev));
+        }
+      }
+    });
+    return () => controller.abort();
   }, []);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
   const filteredProfiles = useMemo(
     () =>
-      ETOSER_PROFILES.filter((profile) => {
+      profiles.filter((profile) => {
         if (!normalizedQuery) return true;
         return (
           profile.name.toLowerCase().includes(normalizedQuery) ||
@@ -46,7 +58,7 @@ export function EtoserCatalogPage({
           profile.interest.toLowerCase().includes(normalizedQuery)
         );
       }),
-    [normalizedQuery],
+    [profiles, normalizedQuery],
   );
 
   const campusGroups = useMemo<readonly CampusGroup[]>(() => {
