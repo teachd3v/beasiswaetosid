@@ -16,6 +16,7 @@ import { useRoute } from './hooks/useRoute';
 import { EtoserCatalogPage } from './pages/EtoserCatalogPage';
 import { NewsDetailPage } from './pages/NewsDetailPage';
 import { NewsListPage } from './pages/NewsListPage';
+import { TeamPage } from './pages/TeamPage';
 
 export function App() {
   const { route, navigate } = useRoute();
@@ -113,6 +114,8 @@ export function App() {
       {route.kind === 'etoser' && (
         <EtoserCatalogPage onNavigate={navigate} reducedMotion={reducedMotion} />
       )}
+
+      {route.kind === 'team' && <TeamPage onNavigate={navigate} />}
 
       {route.kind === 'news-list' && <NewsListPage onNavigate={navigate} />}
 

@@ -151,9 +151,10 @@ export function useSphereOrbit({
         }
       }
 
-      const base = Math.min(Math.max(Math.min(vw, vh * 1.6) * 0.1, 72), 165);
+      const minCardBase = mobile ? 58 : 72;
+      const base = Math.min(Math.max(Math.min(vw, vh * 1.6) * 0.1, minCardBase), 165);
       const rx = vw * (mobile ? 0.42 : 0.36);
-      const ry = vh * (mobile ? 0.32 : 0.3);
+      const ry = vh * (mobile ? 0.34 : 0.3);
       const rz = Math.min(vw * 0.3, 420);
 
       radiiRef.current = { rx, ry, rz };

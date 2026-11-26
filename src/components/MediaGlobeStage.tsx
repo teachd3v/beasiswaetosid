@@ -68,7 +68,7 @@ export function MediaGlobeStage({
     <section
       id="top"
       aria-labelledby="showcase-title"
-      className="section-anchor relative flex min-h-[calc(100dvh-4.25rem)] w-full flex-col items-center justify-between overflow-x-clip border-b border-black/6 bg-[var(--bg-canvas)] pb-6"
+      className="section-anchor relative flex min-h-[calc(100dvh-3.75rem)] w-full flex-col items-center justify-between overflow-x-clip border-b border-black/6 bg-[var(--bg-canvas)] pb-3"
     >
       <div
         ref={stageRef}
@@ -88,7 +88,7 @@ export function MediaGlobeStage({
           <h1
             id="showcase-title"
             style={{ fontFamily: 'var(--font-display)' }}
-            className="hero-glow-title relative m-0 pb-1 text-[clamp(2.65rem,7.8vw,7.25rem)] font-extrabold leading-[0.9] tracking-[-0.04em]"
+            className="hero-glow-title relative m-0 pb-1 text-[clamp(2.15rem,8.2vw,7.25rem)] font-extrabold leading-[0.9] tracking-[-0.04em]"
           >
             <span className="block">Ressillient</span>
             <span className="block">Generations</span>
@@ -125,7 +125,7 @@ export function MediaGlobeStage({
         <a
           href="#tentang-kami"
           aria-label="Gulir ke Tentang Kami"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-black/10 text-xs font-medium text-[var(--ink-secondary)] transition-colors hover:bg-black/5 hover:text-[var(--ink-primary)]"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/10 text-sm font-medium text-[var(--ink-secondary)] transition-colors hover:bg-black/5 hover:text-[var(--ink-primary)] active:scale-95"
         >
           <span aria-hidden="true">↓</span>
         </a>

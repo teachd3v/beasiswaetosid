@@ -2,8 +2,8 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 export function Footer() {
   return (
-    <footer className="border-t border-black/8 bg-[var(--bg-canvas)] py-14">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-8 lg:grid-cols-12 lg:items-start">
+    <footer className="border-t border-black/8 bg-[var(--bg-canvas)] py-8 sm:py-10">
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:gap-8 sm:px-8 lg:grid-cols-12 lg:items-start">
         <div className="lg:col-span-6">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3 sm:gap-x-6">
             <img
@@ -78,7 +78,7 @@ export function Footer() {
                   href="https://www.instagram.com/etos_id/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[var(--surface-pill-border)] bg-[var(--surface-subtle)] px-3.5 py-1 text-xs font-semibold text-[var(--ink-primary)] transition-colors hover:border-[var(--brand-green)]/35 hover:bg-[var(--brand-mint)] hover:text-[var(--brand-green-dark)]"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[var(--surface-pill-border)] bg-[var(--surface-subtle)] px-4 py-2 text-xs font-semibold text-[var(--ink-primary)] transition-colors hover:border-[var(--brand-green)]/35 hover:bg-[var(--brand-mint)] hover:text-[var(--brand-green-dark)]"
                 >
                   <span>Instagram @etos_id</span>
                   <span aria-hidden="true">↗</span>
@@ -87,7 +87,7 @@ export function Footer() {
                   href="https://www.youtube.com/@etosid"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-[var(--surface-pill-border)] bg-[var(--surface-subtle)] px-3.5 py-1 text-xs font-semibold text-[var(--ink-primary)] transition-colors hover:border-[var(--brand-green)]/35 hover:bg-[var(--brand-mint)] hover:text-[var(--brand-green-dark)]"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[var(--surface-pill-border)] bg-[var(--surface-subtle)] px-4 py-2 text-xs font-semibold text-[var(--ink-primary)] transition-colors hover:border-[var(--brand-green)]/35 hover:bg-[var(--brand-mint)] hover:text-[var(--brand-green-dark)]"
                 >
                   <span>YouTube @etosid</span>
                   <span aria-hidden="true">↗</span>
@@ -98,7 +98,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto mt-10 max-w-7xl border-t border-black/6 px-4 pt-6 sm:px-8">
+      <div className="mx-auto mt-6 max-w-7xl border-t border-black/6 px-4 pt-5 sm:mt-8 sm:px-8">
         <p className="text-xs text-[var(--ink-muted)]">
           © {CURRENT_YEAR} ETOS ID · Ressillient Generations
         </p>

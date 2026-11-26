@@ -92,7 +92,7 @@ export function NewsDetailPage({ slug, onNavigate }: NewsDetailPageProps) {
   const relatedNews = allNews.filter((item) => item.slug !== article.slug).slice(0, 3);
 
   return (
-    <main className="flex-1 bg-[var(--bg-canvas)] py-12 sm:py-16">
+    <main className="flex-1 bg-[var(--bg-canvas)] py-7 sm:py-10 lg:py-12">
       <article className="mx-auto max-w-7xl px-4 sm:px-8">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--ink-muted)] sm:text-sm">
           <a
@@ -123,7 +123,7 @@ export function NewsDetailPage({ slug, onNavigate }: NewsDetailPageProps) {
             </span>
           </div>
 
-          <h1 className="mt-4 text-[clamp(2rem,4.5vw,3.1rem)] font-bold leading-[1.1] tracking-[-0.035em] text-[var(--ink-primary)]">
+          <h1 className="mt-4 text-[clamp(1.65rem,4.5vw,3.1rem)] font-bold leading-[1.12] tracking-[-0.035em] text-[var(--ink-primary)]">
             {article.title}
           </h1>
 
@@ -184,21 +184,21 @@ export function NewsDetailPage({ slug, onNavigate }: NewsDetailPageProps) {
       </article>
 
       {relatedNews.length > 0 && (
-        <section className="mx-auto mt-16 max-w-7xl border-t border-black/8 px-4 pt-14 sm:px-8">
+        <section className="mx-auto mt-10 max-w-7xl border-t border-black/8 px-4 pt-8 sm:mt-14 sm:px-8 sm:pt-10">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-xl font-bold tracking-[-0.025em] text-[var(--ink-primary)] sm:text-2xl">
+            <h2 className="text-lg font-bold tracking-[-0.025em] text-[var(--ink-primary)] sm:text-2xl">
               Berita Lainnya
             </h2>
             <a
               href="/berita"
               onClick={(event) => handleLinkClick(event, '/berita')}
-              className="text-sm font-semibold text-[var(--brand-green-dark)] hover:underline"
+              className="text-xs font-semibold text-[var(--brand-green-dark)] hover:underline sm:text-sm"
             >
               Semua Berita →
             </a>
           </div>
 
-          <div className="mt-6 grid gap-5 md:grid-cols-3">
+          <div className="mt-4 grid grid-cols-2 gap-2.5 sm:mt-6 sm:gap-4 md:grid-cols-3">
             {relatedNews.map((item) => {
               const href = `/berita/${item.slug}`;
               return (
@@ -218,9 +218,9 @@ export function NewsDetailPage({ slug, onNavigate }: NewsDetailPageProps) {
                       />
                     </div>
                   )}
-                  <div className="p-5">
-                    <p className="text-xs text-[var(--ink-muted)]">{item.dateLabel}</p>
-                    <h3 className="mt-2 line-clamp-2 text-base font-bold text-[var(--ink-primary)] group-hover:text-[var(--brand-green-dark)]">
+                  <div className="p-3 sm:p-5">
+                    <p className="text-[10px] text-[var(--ink-muted)] sm:text-xs">{item.dateLabel}</p>
+                    <h3 className="mt-1.5 line-clamp-2 text-xs font-bold text-[var(--ink-primary)] group-hover:text-[var(--brand-green-dark)] sm:mt-2 sm:text-base">
                       {item.title}
                     </h3>
                   </div>

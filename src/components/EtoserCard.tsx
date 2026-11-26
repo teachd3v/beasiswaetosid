@@ -60,7 +60,7 @@ export function EtoserCard({
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       onClick={(event) => onSelect(profile, event.currentTarget)}
-      className="etoser-tilt-card group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-left shadow-xs hover:border-[var(--brand-green)]/35 hover:shadow-xl"
+      className="etoser-tilt-card group relative flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--surface-card-border)] bg-[var(--surface-card)] text-left shadow-xs hover:border-[var(--brand-green)]/35 hover:shadow-xl active:scale-[0.98]"
     >
       <div
         ref={sheenRef}
@@ -77,35 +77,35 @@ export function EtoserCard({
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
-        <div className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-black/8 bg-white/94 px-2.5 py-1 shadow-xs backdrop-blur-xs">
+        <div className="absolute left-2 top-2 inline-flex items-center gap-1.5 rounded-full border border-black/8 bg-white/94 px-2 py-0.5 shadow-xs backdrop-blur-xs sm:left-3 sm:top-3 sm:gap-2 sm:px-2.5 sm:py-1">
           <img
             src={profile.campusLogoSrc}
             alt=""
             aria-hidden="true"
-            className="h-5 w-5 object-contain"
+            className="h-4 w-4 object-contain sm:h-5 sm:w-5"
           />
-          <span className="text-xs font-bold tracking-tight text-[var(--ink-primary)]">
+          <span className="text-[10px] font-bold tracking-tight text-[var(--ink-primary)] sm:text-xs">
             {profile.campusShort}
           </span>
         </div>
       </div>
 
-      <div className="relative z-10 flex flex-1 flex-col justify-between p-5">
+      <div className="relative z-10 flex flex-1 flex-col justify-between p-3 sm:p-4">
         <div>
-          <span className="inline-flex rounded-full bg-[var(--brand-mint)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--brand-green-dark)]">
+          <span className="inline-flex rounded-full bg-[var(--brand-mint)] px-2 py-0.5 text-[9.5px] font-semibold text-[var(--brand-green-dark)] sm:px-2.5 sm:text-[11px]">
             {profile.interest}
           </span>
 
-          <h2 className="mt-2.5 text-lg font-bold leading-snug tracking-[-0.025em] text-[var(--ink-primary)] transition-colors group-hover:text-[var(--brand-green-dark)]">
+          <h2 className="mt-1.5 line-clamp-1 text-xs font-bold leading-snug tracking-[-0.02em] text-[var(--ink-primary)] transition-colors group-hover:text-[var(--brand-green-dark)] sm:mt-2 sm:text-base">
             {profile.name}
           </h2>
 
-          <p className="mt-1 text-xs font-medium text-[var(--ink-muted)]">
+          <p className="mt-0.5 line-clamp-1 text-[10px] font-medium text-[var(--ink-muted)] sm:mt-1 sm:text-xs">
             {profile.major} · {profile.batch}
           </p>
         </div>
 
-        <div className="mt-5 flex items-center justify-between border-t border-black/6 pt-3.5 text-xs font-semibold text-[var(--brand-green-dark)]">
+        <div className="mt-3 flex items-center justify-between border-t border-black/6 pt-2.5 text-[10.5px] font-semibold text-[var(--brand-green-dark)] sm:mt-4 sm:pt-3 sm:text-xs">
           <span>Lihat profil</span>
           <span
             aria-hidden="true"

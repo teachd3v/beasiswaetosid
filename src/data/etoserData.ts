@@ -1,17 +1,9 @@
-export type EtoserRegion =
-  | 'Semua'
-  | 'Sumatra'
-  | 'Jawa & Nusa Tenggara'
-  | 'Kalimantan'
-  | 'Sulawesi & Maluku';
-
 export interface EtoserProfile {
   readonly id: string;
   readonly name: string;
   readonly campusShort: string;
   readonly campusFull: string;
   readonly campusLogoSrc: string;
-  readonly region: Exclude<EtoserRegion, 'Semua'>;
   readonly major: string;
   readonly batch: string;
   readonly photoSrc: string;
@@ -20,14 +12,6 @@ export interface EtoserProfile {
   readonly bio: string;
   readonly achievements: readonly string[];
 }
-
-export const ETOSER_REGIONS: readonly EtoserRegion[] = [
-  'Semua',
-  'Sumatra',
-  'Jawa & Nusa Tenggara',
-  'Kalimantan',
-  'Sulawesi & Maluku',
-];
 
 /**
  * 15 profil Etoser dummy (1 Etoser per kampus mitra ETOS ID).
@@ -40,7 +24,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'USK',
     campusFull: 'Universitas Syiah Kuala',
     campusLogoSrc: encodeURI('/kampus/USK (UNIVERSITAS SYIAH KUALA).png'),
-    region: 'Sumatra',
     major: 'Ilmu Kelautan',
     batch: 'Angkatan 2023',
     photoSrc: '/media/YIC_ETOS_ID_2026_001.webp',
@@ -59,7 +42,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'USU',
     campusFull: 'Universitas Sumatera Utara',
     campusLogoSrc: encodeURI('/kampus/USU (UNIVERSITAS SUMATERA UTARA).png'),
-    region: 'Sumatra',
     major: 'Teknologi Informasi',
     batch: 'Angkatan 2022',
     photoSrc: '/media/YIC_ETOS_ID_2026_003.webp',
@@ -78,7 +60,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UNAND',
     campusFull: 'Universitas Andalas',
     campusLogoSrc: encodeURI('/kampus/UNAND (UNIVERSITAS ANDALAS).png'),
-    region: 'Sumatra',
     major: 'Ilmu Gizi',
     batch: 'Angkatan 2023',
     photoSrc: '/media/YIC_ETOS_ID_2026_005.webp',
@@ -97,7 +78,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UNJA',
     campusFull: 'Universitas Jambi',
     campusLogoSrc: encodeURI('/kampus/UNJA (UNIVERSITAS JAMBI).png'),
-    region: 'Sumatra',
     major: 'Agribisnis',
     batch: 'Angkatan 2024',
     photoSrc: '/media/YIC_ETOS_ID_2026_007.webp',
@@ -116,7 +96,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UNILA',
     campusFull: 'Universitas Lampung',
     campusLogoSrc: encodeURI('/kampus/UNILA (UNIVERSITAS LAMPUNG).png'),
-    region: 'Sumatra',
     major: 'Pendidikan Bahasa Inggris',
     batch: 'Angkatan 2022',
     photoSrc: '/media/YIC_ETOS_ID_2026_008.webp',
@@ -135,7 +114,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UIN Jakarta',
     campusFull: 'UIN Syarif Hidayatullah Jakarta',
     campusLogoSrc: encodeURI('/kampus/UIN JAKARTA (UIN SYARIF HIDAYATULLAH).png'),
-    region: 'Jawa & Nusa Tenggara',
     major: 'Ekonomi Syariah',
     batch: 'Angkatan 2023',
     photoSrc: '/media/YIC_ETOS_ID_2026_010.webp',
@@ -154,7 +132,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UGM',
     campusFull: 'Universitas Gadjah Mada',
     campusLogoSrc: encodeURI('/kampus/UGM (UNIVERSITAS GADJAH MADA).png'),
-    region: 'Jawa & Nusa Tenggara',
     major: 'Pembangunan Sosial & Kesejahteraan',
     batch: 'Angkatan 2022',
     photoSrc: '/media/YIC_ETOS_ID_2026_012.webp',
@@ -173,7 +150,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UNRAM',
     campusFull: 'Universitas Mataram',
     campusLogoSrc: encodeURI('/kampus/UNRAM (UNIVERSITAS MATARAM).png'),
-    region: 'Jawa & Nusa Tenggara',
     major: 'Teknik Sipil',
     batch: 'Angkatan 2023',
     photoSrc: '/media/YIC_ETOS_ID_2026_014.webp',
@@ -192,7 +168,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UPR',
     campusFull: 'Universitas Palangka Raya',
     campusLogoSrc: encodeURI('/kampus/UPR (UNIVERSITAS PALANGKARAYA).png'),
-    region: 'Kalimantan',
     major: 'Kehutanan',
     batch: 'Angkatan 2024',
     photoSrc: '/media/YIC_ETOS_ID_2026_016.webp',
@@ -211,7 +186,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UNLAM',
     campusFull: 'Universitas Lambung Mangkurat',
     campusLogoSrc: encodeURI('/kampus/UNLAM (UNIVERSITAS LAMBUNG MANGKURAT).png'),
-    region: 'Kalimantan',
     major: 'Kesehatan Masyarakat',
     batch: 'Angkatan 2023',
     photoSrc: '/media/YIC_ETOS_ID_2026_018.webp',
@@ -230,7 +204,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UNMUL',
     campusFull: 'Universitas Mulawarman',
     campusLogoSrc: encodeURI('/kampus/UNMUL (UNIVERSITAS MULAWARMAN).png'),
-    region: 'Kalimantan',
     major: 'Ilmu Komunikasi',
     batch: 'Angkatan 2022',
     photoSrc: '/media/YIC_ETOS_ID_2026_020.webp',
@@ -249,7 +222,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UNTAD',
     campusFull: 'Universitas Tadulako',
     campusLogoSrc: encodeURI('/kampus/UNTAD (UNIVERSITAS TADULAKO).png'),
-    region: 'Sulawesi & Maluku',
     major: 'Pertanian',
     batch: 'Angkatan 2023',
     photoSrc: '/media/YIC_ETOS_ID_2026_022.webp',
@@ -268,7 +240,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UNHAS',
     campusFull: 'Universitas Hasanuddin',
     campusLogoSrc: encodeURI('/kampus/UNHAS (UNIVERSITAS HASANUDDIN).png'),
-    region: 'Sulawesi & Maluku',
     major: 'Kedokteran Gigi',
     batch: 'Angkatan 2022',
     photoSrc: '/media/YIC_ETOS_ID_2026_024.webp',
@@ -287,7 +258,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UHO',
     campusFull: 'Universitas Halu Oleo',
     campusLogoSrc: encodeURI('/kampus/UHO (UNIVERSITAS HALU ULEO).png'),
-    region: 'Sulawesi & Maluku',
     major: 'Pendidikan Matematika',
     batch: 'Angkatan 2024',
     photoSrc: '/media/YIC_ETOS_ID_2026_026.webp',
@@ -306,7 +276,6 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
     campusShort: 'UNPATTI',
     campusFull: 'Universitas Pattimura',
     campusLogoSrc: encodeURI('/kampus/UNPATTI (UNIVERSITAS PATTIMURA).png'),
-    region: 'Sulawesi & Maluku',
     major: 'Perikanan & Ilmu Kelautan',
     batch: 'Angkatan 2023',
     photoSrc: '/media/YIC_ETOS_ID_2026_028.webp',
