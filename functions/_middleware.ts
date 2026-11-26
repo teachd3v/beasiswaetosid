@@ -14,7 +14,7 @@ interface PageSeoMeta {
   jsonLd: Record<string, unknown>[];
 }
 
-const DEFAULT_IMAGE_PATH = '/media/YIC_ETOS_ID_2026_001.webp';
+const DEFAULT_IMAGE_PATH = '/og-home.png';
 
 const HOME_FAQ_ITEMS = [
   {
