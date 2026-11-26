@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { adminNewsApi } from '../../services/adminApi';
 import type { AdminNewsItem } from '../../services/adminApi';
 import { ImageUploadField } from '../components/ImageUploadField';
+import { generateAndUploadNewsOgCard } from '../lib/ogGenerator';
 
 type NewsCategory = 'Program' | 'Prestasi' | 'Aktivitas & Monev';
 
@@ -17,6 +18,8 @@ interface NewsFormState {
   location: string;
   coverR2Key: string;
   coverUrl: string;
+  ogR2Key: string;
+  ogUrl: string;
   excerpt: string;
   contentText: string;
   status: 'draft' | 'published';
@@ -41,6 +44,8 @@ export function NewsManagerPage() {
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<NewsFormState | null>(null);
   const [saving, setSaving] = useState(false);
+  const [generatingOg, setGeneratingOg] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -83,6 +88,7 @@ export function NewsManagerPage() {
     [items],
   );
 
+  const missingOgCount = useMemo(() => items.filter((i) => !i.ogR2Key).length, [items]);
   const allOpen = CATEGORIES.every((c) => openCategories.has(c));
 
   const toggleCategory = (category: NewsCategory) => {
@@ -113,6 +119,8 @@ export function NewsManagerPage() {
       location: '',
       coverR2Key: '',
       coverUrl: '',
+      ogR2Key: '',
+      ogUrl: '',
       excerpt: '',
       contentText: '',
       status: 'draft',
@@ -130,10 +138,76 @@ export function NewsManagerPage() {
       location: item.location,
       coverR2Key: item.coverR2Key,
       coverUrl: item.coverUrl,
+      ogR2Key: item.ogR2Key,
+      ogUrl: item.ogUrl,
       excerpt: item.excerpt,
       contentText: item.content.join('\n\n'),
       status: item.status,
     });
+  };
+
+  const handleGenerateFormOg = async () => {
+    if (!form || !form.title.trim()) {
+      setError('Isi judul berita terlebih dahulu sebelum generate kartu OG.');
+      return;
+    }
+    setGeneratingOg(true);
+    setError(null);
+    try {
+      const generated = await generateAndUploadNewsOgCard({
+        title: form.title,
+        category: form.category,
+        dateLabel: form.dateLabel,
+        location: form.location,
+        coverUrl: form.coverUrl,
+        slug: form.slug || slugify(form.title),
+      });
+      setForm((prev) =>
+        prev ? { ...prev, ogR2Key: generated.key, ogUrl: generated.url } : prev,
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal generate kartu OG');
+    } finally {
+      setGeneratingOg(false);
+    }
+  };
+
+  const handleBatchGenerateOg = async () => {
+    const targets = items.filter((item) => !item.ogR2Key);
+    if (targets.length === 0) return;
+    setError(null);
+    try {
+      for (let i = 0; i < targets.length; i += 1) {
+        const item = targets[i];
+        setBatchProgress(`Generating OG ${i + 1}/${targets.length}...`);
+        const generated = await generateAndUploadNewsOgCard({
+          title: item.title,
+          category: item.category,
+          dateLabel: item.dateLabel,
+          location: item.location,
+          coverUrl: item.coverUrl,
+          slug: item.slug,
+        });
+        await adminNewsApi.update(item.id, {
+          slug: item.slug,
+          title: item.title,
+          category: item.category,
+          dateLabel: item.dateLabel,
+          publishedAt: item.publishedAt,
+          location: item.location,
+          coverR2Key: item.coverR2Key,
+          ogR2Key: generated.key,
+          excerpt: item.excerpt,
+          content: item.content,
+          status: item.status,
+        });
+      }
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal batch generate OG card');
+    } finally {
+      setBatchProgress(null);
+    }
   };
 
   const handleSave = async (event: React.FormEvent) => {
@@ -147,14 +221,35 @@ export function NewsManagerPage() {
         .map((p) => p.trim())
         .filter(Boolean);
 
+      const finalSlug = form.slug || slugify(form.title);
+      let finalOgKey = form.ogR2Key;
+
+      // Auto-generate branded OG Card 1200x630 JPEG jika belum ada saat publish
+      if (!finalOgKey && form.title.trim()) {
+        try {
+          const generated = await generateAndUploadNewsOgCard({
+            title: form.title,
+            category: form.category,
+            dateLabel: form.dateLabel,
+            location: form.location,
+            coverUrl: form.coverUrl,
+            slug: finalSlug,
+          });
+          finalOgKey = generated.key;
+        } catch {
+          // Tetap lanjut simpan berita walau generate OG gagal
+        }
+      }
+
       const payload = {
-        slug: form.slug || slugify(form.title),
+        slug: finalSlug,
         title: form.title,
         category: form.category,
         dateLabel: form.dateLabel,
         publishedAt: form.publishedAt,
         location: form.location,
         coverR2Key: form.coverR2Key,
+        ogR2Key: finalOgKey,
         excerpt: form.excerpt,
         content: paragraphs,
         status: form.status,
@@ -188,9 +283,22 @@ export function NewsManagerPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-bold text-neutral-900">Manajemen Berita & Artikel</h1>
-          <p className="text-xs text-neutral-500">Total {items.length} artikel di database D1.</p>
+          <p className="text-xs text-neutral-500">
+            Total {items.length} artikel · {items.length - missingOgCount}/{items.length} sudah
+            punya Kartu OG SEO (1200×630).
+          </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {missingOgCount > 0 && (
+            <button
+              type="button"
+              disabled={batchProgress !== null}
+              onClick={() => void handleBatchGenerateOg()}
+              className="rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 disabled:opacity-60"
+            >
+              {batchProgress ?? `Generate OG Card (${missingOgCount})`}
+            </button>
+          )}
           <button
             type="button"
             onClick={toggleAll}
@@ -285,6 +393,14 @@ export function NewsManagerPage() {
                               >
                                 {item.status === 'published' ? 'Published' : 'Draft'}
                               </span>
+                              {item.ogR2Key && (
+                                <span
+                                  title="Kartu OG SEO 1200×630 aktif"
+                                  className="absolute right-2 top-2 z-10 rounded-full bg-neutral-900/80 px-2 py-0.5 text-[9.5px] font-semibold text-emerald-300"
+                                >
+                                  OG ✓
+                                </span>
+                              )}
                             </div>
 
                             <div className="flex flex-1 flex-col justify-between p-3">
@@ -346,6 +462,42 @@ export function NewsManagerPage() {
                   setForm((prev) => (prev ? { ...prev, coverR2Key: key, coverUrl: url } : prev))
                 }
               />
+
+              {/* Preview & Generator Kartu OG SEO (1200x630 JPEG) */}
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-bold text-emerald-950">
+                      Kartu Preview Share (OG SEO · 1200×630 JPEG)
+                    </p>
+                    <p className="text-[11px] text-emerald-800/80">
+                      Tampil saat link berita di-share ke WhatsApp, LinkedIn, X, & Facebook.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={generatingOg}
+                    onClick={() => void handleGenerateFormOg()}
+                    className="rounded-lg bg-[var(--brand-green-dark)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-95 disabled:opacity-50"
+                  >
+                    {generatingOg
+                      ? 'Merender OG...'
+                      : form.ogUrl
+                        ? 'Regenerate Kartu OG'
+                        : 'Generate Kartu OG'}
+                  </button>
+                </div>
+
+                {form.ogUrl && (
+                  <div className="mt-2.5 overflow-hidden rounded-lg border border-emerald-200 bg-neutral-900">
+                    <img
+                      src={form.ogUrl}
+                      alt="Preview kartu Open Graph"
+                      className="aspect-[1200/630] w-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
 
               <div>
                 <label className="block text-xs font-semibold text-neutral-700">Judul Berita</label>

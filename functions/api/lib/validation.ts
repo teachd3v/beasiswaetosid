@@ -43,6 +43,7 @@ export const newsSchema = z.object({
   publishedAt: z.string().trim().min(4, 'Tanggal publikasi wajib diisi').max(40),
   location: z.string().trim().max(120).optional().nullable(),
   coverR2Key: z.string().trim().optional().nullable(),
+  ogR2Key: z.string().trim().optional().nullable(),
   excerpt: z.string().trim().min(1, 'Ringkasan wajib diisi').max(600),
   content: z.array(z.string().trim().min(1)).min(1, 'Isi berita minimal 1 paragraf'),
   status: z.enum(['draft', 'published']).default('draft'),

@@ -7,11 +7,45 @@ interface PageSeoMeta {
   canonicalUrl: string;
   ogType: 'website' | 'article';
   ogImage: string;
+  ogImageAlt: string;
+  articlePublishedTime?: string;
+  articleSection?: string;
   robots: string;
   jsonLd: Record<string, unknown>[];
 }
 
 const DEFAULT_IMAGE_PATH = '/media/YIC_ETOS_ID_2026_001.webp';
+
+const HOME_FAQ_ITEMS = [
+  {
+    q: 'Siapa saja yang dapat mendaftar Beasiswa ETOS ID?',
+    a: 'Calon mahasiswa baru yang telah diterima di salah satu Perguruan Tinggi Negeri (PTN) mitra ETOS ID pada tahun seleksi berjalan, beragama Islam, memiliki prestasi akademik maupun organisasi, mendapat izin orang tua/wali, serta berkomitmen mengikuti pembinaan selama 8 semester.',
+  },
+  {
+    q: 'Apakah penerima KIP Kuliah dapat mendaftar ETOS ID?',
+    a: 'Tidak. Pendaftar yang sudah atau sedang menjadi penerima beasiswa KIP Kuliah tidak dapat mendaftar Beasiswa ETOS ID agar manfaat beasiswa dapat menjangkau lebih banyak mahasiswa yang membutuhkan.',
+  },
+  {
+    q: 'Bagaimana jika orang tua tidak memiliki slip gaji resmi?',
+    a: 'Jika orang tua bekerja di sektor non-formal atau tidak memiliki slip gaji resmi, berkas tersebut dapat diganti dengan Surat Keterangan Penghasilan dari RT/RW atau kelurahan/desa setempat yang mencantumkan perkiraan nominal penghasilan.',
+  },
+  {
+    q: 'Bagaimana jika biaya pendidikan ditanggung oleh wali?',
+    a: 'Apabila biaya hidup dan pendidikan ditanggung oleh wali (bukan orang tua kandung), maka dokumen penghasilan yang dilampirkan disesuaikan dengan pihak wali yang menjadi penanggung jawab finansial.',
+  },
+  {
+    q: 'Dokumen administrasi apa saja yang umumnya perlu disiapkan?',
+    a: 'Secara umum pendaftar menyiapkan identitas diri (KTP/Kartu Pelajar), Kartu Keluarga, bukti diterima di PTN mitra, ijazah atau SKL, slip gaji/surat keterangan penghasilan, foto rumah, serta sertifikat prestasi atau keaktifan organisasi jika ada.',
+  },
+  {
+    q: 'Apa saja fasilitas yang didapatkan penerima manfaat ETOS ID?',
+    a: 'Penerima manfaat (Etoser) mendapatkan dukungan biaya pendidikan (UKT) selama 8 semester, tunjangan aktivitas, program pengembangan kapasitas (capacity building), pendampingan mentor, persiapan karier, dan jejaring nasional lintas kampus mitra.',
+  },
+  {
+    q: 'Apakah Etoser wajib mengikuti seluruh rangkaian program pembinaan?',
+    a: 'Ya. Setiap mahasiswa yang dinyatakan lolos sebagai Etoser wajib berkomitmen mengikuti seluruh aktivitas dan kurikulum pembinaan ETOS ID selama 8 semester dari awal hingga prosesi kelulusan.',
+  },
+];
 
 function resolveSiteOrigin(requestUrl: string, configuredSiteUrl?: string): string {
   if (configuredSiteUrl?.trim()) {
@@ -25,6 +59,10 @@ function toAbsoluteUrl(urlOrPath: string, origin: string): string {
     return urlOrPath;
   }
   return `${origin}${urlOrPath.startsWith('/') ? '' : '/'}${urlOrPath}`;
+}
+
+function escapeAttr(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 }
 
 function isStaticAssetPath(pathname: string): boolean {
@@ -65,6 +103,7 @@ async function resolvePageMeta(
       canonicalUrl: `${origin}${cleanPath}`,
       ogType: 'website',
       ogImage: defaultImage,
+      ogImageAlt: 'Admin CMS Beasiswa ETOS ID',
       robots: 'noindex, nofollow',
       jsonLd: [],
     };
@@ -78,6 +117,7 @@ async function resolvePageMeta(
       canonicalUrl: `${origin}/etoser`,
       ogType: 'website',
       ogImage: defaultImage,
+      ogImageAlt: 'Katalog Profil Etoser Beasiswa ETOS ID',
       robots: 'index, follow, max-image-preview:large',
       jsonLd: [
         organizationSchema,
@@ -101,6 +141,7 @@ async function resolvePageMeta(
       canonicalUrl: `${origin}/tim-kami`,
       ogType: 'website',
       ogImage: defaultImage,
+      ogImageAlt: 'Tim Pengelola dan Fasilitator Daerah Beasiswa ETOS ID',
       robots: 'index, follow, max-image-preview:large',
       jsonLd: [
         organizationSchema,
@@ -124,6 +165,7 @@ async function resolvePageMeta(
       canonicalUrl: `${origin}/berita`,
       ogType: 'website',
       ogImage: defaultImage,
+      ogImageAlt: 'Berita dan Kabar Etoser Beasiswa ETOS ID',
       robots: 'index, follow, max-image-preview:large',
       jsonLd: [
         organizationSchema,
@@ -143,7 +185,7 @@ async function resolvePageMeta(
     const slug = decodeURIComponent(cleanPath.slice('/berita/'.length));
     try {
       const article = await env.DB.prepare(
-        `SELECT slug, title, category, published_at, updated_at, cover_r2_key, excerpt
+        `SELECT slug, title, category, published_at, updated_at, cover_r2_key, og_r2_key, excerpt
          FROM news
          WHERE slug = ? AND status = 'published'`,
       )
@@ -155,13 +197,15 @@ async function resolvePageMeta(
           published_at: string;
           updated_at: string;
           cover_r2_key: string | null;
+          og_r2_key: string | null;
           excerpt: string;
         }>();
 
       if (article) {
         const canonicalUrl = `${origin}/berita/${encodeURIComponent(article.slug)}`;
-        const resolvedCover = article.cover_r2_key
-          ? toAbsoluteUrl(resolveMediaUrl(article.cover_r2_key, env.R2_PUBLIC_URL), origin)
+        const chosenImageKey = article.og_r2_key || article.cover_r2_key;
+        const resolvedOgImage = chosenImageKey
+          ? toAbsoluteUrl(resolveMediaUrl(chosenImageKey, env.R2_PUBLIC_URL), origin)
           : defaultImage;
 
         return {
@@ -169,7 +213,10 @@ async function resolvePageMeta(
           description: article.excerpt,
           canonicalUrl,
           ogType: 'article',
-          ogImage: resolvedCover,
+          ogImage: resolvedOgImage,
+          ogImageAlt: article.title,
+          articlePublishedTime: article.published_at,
+          articleSection: article.category,
           robots: 'index, follow, max-image-preview:large',
           jsonLd: [
             {
@@ -177,7 +224,7 @@ async function resolvePageMeta(
               '@type': 'NewsArticle',
               headline: article.title,
               description: article.excerpt,
-              image: [resolvedCover],
+              image: [resolvedOgImage],
               datePublished: article.published_at,
               dateModified: article.updated_at || article.published_at,
               articleSection: article.category,
@@ -220,6 +267,7 @@ async function resolvePageMeta(
     canonicalUrl: `${origin}/`,
     ogType: 'website',
     ogImage: defaultImage,
+    ogImageAlt: 'Beasiswa ETOS ID · Dompet Dhuafa',
     robots: 'index, follow, max-image-preview:large',
     jsonLd: [
       organizationSchema,
@@ -228,6 +276,18 @@ async function resolvePageMeta(
         '@type': 'WebSite',
         name: 'Beasiswa ETOS ID',
         url: origin,
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: HOME_FAQ_ITEMS.map((item) => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.a,
+          },
+        })),
       },
     ],
   };
@@ -295,6 +355,11 @@ export const onRequest: PagesFunction<Bindings> = async (context) => {
         el.setAttribute('content', meta.ogImage);
       },
     })
+    .on('meta[property="og:image:alt"]', {
+      element(el) {
+        el.setAttribute('content', meta.ogImageAlt);
+      },
+    })
     .on('meta[name="twitter:title"]', {
       element(el) {
         el.setAttribute('content', meta.title);
@@ -312,6 +377,18 @@ export const onRequest: PagesFunction<Bindings> = async (context) => {
     })
     .on('head', {
       element(el) {
+        if (meta.articlePublishedTime) {
+          el.append(
+            `<meta property="article:published_time" content="${escapeAttr(meta.articlePublishedTime)}" />`,
+            { html: true },
+          );
+        }
+        if (meta.articleSection) {
+          el.append(
+            `<meta property="article:section" content="${escapeAttr(meta.articleSection)}" />`,
+            { html: true },
+          );
+        }
         for (const schema of meta.jsonLd) {
           const serialized = JSON.stringify(schema).replace(/</g, '\\u003c');
           el.append(`<script type="application/ld+json">${serialized}</script>`, {

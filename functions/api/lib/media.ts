@@ -6,6 +6,7 @@ export const ALLOWED_MEDIA_FOLDERS = new Set([
   'news',
   'testimonials',
   'team',
+  'og',
 ]);
 
 export const ALLOWED_MIME_TYPES = new Map<string, string>([
@@ -63,11 +64,11 @@ export async function deleteManagedR2Object(
       `SELECT
         (SELECT COUNT(*) FROM media_items WHERE r2_key = ?) +
         (SELECT COUNT(*) FROM etosers WHERE photo_r2_key = ?) +
-        (SELECT COUNT(*) FROM news WHERE cover_r2_key = ?) +
+        (SELECT COUNT(*) FROM news WHERE cover_r2_key = ? OR og_r2_key = ?) +
         (SELECT COUNT(*) FROM testimonials WHERE photo_r2_key = ?) +
         (SELECT COUNT(*) FROM team_members WHERE photo_r2_key = ?) AS total_refs`,
     )
-      .bind(oldKey, oldKey, oldKey, oldKey, oldKey)
+      .bind(oldKey, oldKey, oldKey, oldKey, oldKey, oldKey)
       .first<{ total_refs: number }>();
 
     if ((refCheck?.total_refs ?? 0) > 0) {

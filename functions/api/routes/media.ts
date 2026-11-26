@@ -112,11 +112,11 @@ mediaAdminRoutes.delete('/media-library', async (c) => {
     `SELECT
       (SELECT COUNT(*) FROM media_items WHERE r2_key = ?) +
       (SELECT COUNT(*) FROM etosers WHERE photo_r2_key = ?) +
-      (SELECT COUNT(*) FROM news WHERE cover_r2_key = ?) +
+      (SELECT COUNT(*) FROM news WHERE cover_r2_key = ? OR og_r2_key = ?) +
       (SELECT COUNT(*) FROM testimonials WHERE photo_r2_key = ?) +
       (SELECT COUNT(*) FROM team_members WHERE photo_r2_key = ?) AS total_refs`,
   )
-    .bind(key, key, key, key, key)
+    .bind(key, key, key, key, key, key)
     .first<{ total_refs: number }>();
 
   if ((refCheck?.total_refs ?? 0) > 0) {

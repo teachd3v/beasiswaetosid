@@ -275,7 +275,7 @@ adminRoutes.delete('/etosers/:id', async (c) => {
 // ---------- 3. NEWS ----------
 adminRoutes.get('/news', async (c) => {
   const { results } = await c.env.DB.prepare(
-    `SELECT id, slug, title, category, date_label, published_at, location, cover_r2_key,
+    `SELECT id, slug, title, category, date_label, published_at, location, cover_r2_key, og_r2_key,
             excerpt, content_json, status, updated_at
      FROM news ORDER BY published_at DESC, created_at DESC`,
   ).all<{
@@ -287,6 +287,7 @@ adminRoutes.get('/news', async (c) => {
     published_at: string;
     location: string | null;
     cover_r2_key: string | null;
+    og_r2_key: string | null;
     excerpt: string;
     content_json: string;
     status: 'draft' | 'published';
@@ -305,6 +306,8 @@ adminRoutes.get('/news', async (c) => {
       location: r.location ?? '',
       coverR2Key: r.cover_r2_key ?? '',
       coverUrl: r.cover_r2_key ? resolveMediaUrl(r.cover_r2_key, base) : '',
+      ogR2Key: r.og_r2_key ?? '',
+      ogUrl: r.og_r2_key ? resolveMediaUrl(r.og_r2_key, base) : '',
       excerpt: r.excerpt,
       content: safeJsonArray(r.content_json),
       status: r.status,
@@ -324,8 +327,8 @@ adminRoutes.post('/news', async (c) => {
 
   const id = newId('berita');
   await c.env.DB.prepare(
-    `INSERT INTO news (id, slug, title, category, date_label, published_at, location, cover_r2_key, excerpt, content_json, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO news (id, slug, title, category, date_label, published_at, location, cover_r2_key, og_r2_key, excerpt, content_json, status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
@@ -336,6 +339,7 @@ adminRoutes.post('/news', async (c) => {
       d.publishedAt,
       d.location || null,
       d.coverR2Key || null,
+      d.ogR2Key || null,
       d.excerpt,
       JSON.stringify(d.content),
       d.status,
@@ -351,9 +355,9 @@ adminRoutes.put('/news/:id', async (c) => {
   if (!parsed.success) {
     return c.json({ error: parsed.error.issues[0]?.message ?? 'Payload tidak valid' }, 400);
   }
-  const existing = await c.env.DB.prepare('SELECT cover_r2_key FROM news WHERE id = ?')
+  const existing = await c.env.DB.prepare('SELECT cover_r2_key, og_r2_key FROM news WHERE id = ?')
     .bind(id)
-    .first<{ cover_r2_key: string | null }>();
+    .first<{ cover_r2_key: string | null; og_r2_key: string | null }>();
   if (!existing) return c.json({ error: 'Data tidak ditemukan' }, 404);
 
   const d = parsed.data;
@@ -365,7 +369,7 @@ adminRoutes.put('/news/:id', async (c) => {
   await c.env.DB.prepare(
     `UPDATE news
      SET slug = ?, title = ?, category = ?, date_label = ?, published_at = ?, location = ?,
-         cover_r2_key = ?, excerpt = ?, content_json = ?, status = ?, updated_at = datetime('now')
+         cover_r2_key = ?, og_r2_key = ?, excerpt = ?, content_json = ?, status = ?, updated_at = datetime('now')
      WHERE id = ?`,
   )
     .bind(
@@ -376,6 +380,7 @@ adminRoutes.put('/news/:id', async (c) => {
       d.publishedAt,
       d.location || null,
       d.coverR2Key || null,
+      d.ogR2Key || null,
       d.excerpt,
       JSON.stringify(d.content),
       d.status,
@@ -384,18 +389,20 @@ adminRoutes.put('/news/:id', async (c) => {
     .run();
 
   await deleteManagedR2Object(c.env, existing.cover_r2_key, d.coverR2Key || null);
+  await deleteManagedR2Object(c.env, existing.og_r2_key, d.ogR2Key || null);
   return c.json({ ok: true });
 });
 
 adminRoutes.delete('/news/:id', async (c) => {
   const id = c.req.param('id');
-  const existing = await c.env.DB.prepare('SELECT cover_r2_key FROM news WHERE id = ?')
+  const existing = await c.env.DB.prepare('SELECT cover_r2_key, og_r2_key FROM news WHERE id = ?')
     .bind(id)
-    .first<{ cover_r2_key: string | null }>();
+    .first<{ cover_r2_key: string | null; og_r2_key: string | null }>();
   if (!existing) return c.json({ error: 'Data tidak ditemukan' }, 404);
 
   await c.env.DB.prepare('DELETE FROM news WHERE id = ?').bind(id).run();
   await deleteManagedR2Object(c.env, existing.cover_r2_key);
+  await deleteManagedR2Object(c.env, existing.og_r2_key);
   return c.json({ ok: true });
 });
 

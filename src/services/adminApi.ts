@@ -54,6 +54,8 @@ export interface AdminNewsItem {
   location: string;
   coverR2Key: string;
   coverUrl: string;
+  ogR2Key: string;
+  ogUrl: string;
   excerpt: string;
   content: string[];
   status: 'draft' | 'published';
@@ -85,7 +87,7 @@ export interface AdminTeamMemberItem {
   isPublished: boolean;
 }
 
-export type MediaFolder = 'showcase' | 'etoser' | 'news' | 'testimonials' | 'team';
+export type MediaFolder = 'showcase' | 'etoser' | 'news' | 'testimonials' | 'team' | 'og';
 
 export interface MediaLibraryItem {
   key: string;
@@ -213,6 +215,22 @@ export async function uploadAdminImage(
   return { key: res.key, url: res.url, width, height };
 }
 
+/**
+ * Unggah file JPEG OG Card (1200x630) langsung ke folder R2 `og/` tanpa ubah format ke WebP,
+ * agar 100% kompatibel dengan preview link WhatsApp, Telegram, LinkedIn, dan X.
+ */
+export async function uploadOgCardJpeg(
+  file: File,
+): Promise<{ key: string; url: string }> {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('folder', 'og');
+  return apiRequest<{ key: string; url: string }>('/api/admin/upload', {
+    method: 'POST',
+    body: form,
+  });
+}
+
 export function createResourceApi<TItem, TPayload>(resource: string) {
   return {
     list: () => apiRequest<TItem[]>(`/api/admin/${resource}`),
@@ -274,6 +292,7 @@ export const adminNewsApi = createResourceApi<
     publishedAt: string;
     location: string;
     coverR2Key: string;
+    ogR2Key?: string;
     excerpt: string;
     content: string[];
     status: 'draft' | 'published';
