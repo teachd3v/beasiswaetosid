@@ -46,6 +46,10 @@ export function resolveMediaUrl(
   return `/api/media/${value}`;
 }
 
+/**
+ * Hapus objek dari R2 hanya jika sudah tidak direferensikan oleh tabel manapun di D1.
+ * Aman untuk media yang dipakai bersama lewat Media Library Picker.
+ */
 export async function deleteManagedR2Object(
   env: Bindings,
   oldKey: string | null | undefined,
@@ -53,7 +57,23 @@ export async function deleteManagedR2Object(
 ): Promise<void> {
   if (!isManagedR2Key(oldKey)) return;
   if (newKey && oldKey === newKey) return;
+
   try {
+    const refCheck = await env.DB.prepare(
+      `SELECT
+        (SELECT COUNT(*) FROM media_items WHERE r2_key = ?) +
+        (SELECT COUNT(*) FROM etosers WHERE photo_r2_key = ?) +
+        (SELECT COUNT(*) FROM news WHERE cover_r2_key = ?) +
+        (SELECT COUNT(*) FROM testimonials WHERE photo_r2_key = ?) +
+        (SELECT COUNT(*) FROM team_members WHERE photo_r2_key = ?) AS total_refs`,
+    )
+      .bind(oldKey, oldKey, oldKey, oldKey, oldKey)
+      .first<{ total_refs: number }>();
+
+    if ((refCheck?.total_refs ?? 0) > 0) {
+      return;
+    }
+
     await env.MEDIA_BUCKET.delete(oldKey);
   } catch {
     // Jangan gagalkan operasi database jika pembersihan R2 gagal

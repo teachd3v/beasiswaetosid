@@ -87,6 +87,16 @@ export interface AdminTeamMemberItem {
 
 export type MediaFolder = 'showcase' | 'etoser' | 'news' | 'testimonials' | 'team';
 
+export interface MediaLibraryItem {
+  key: string;
+  url: string;
+  label: string;
+  source: 'r2' | 'showcase';
+  folder: string;
+  width?: number;
+  height?: number;
+}
+
 async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     ...init,
@@ -135,6 +145,10 @@ export async function logoutAdmin(): Promise<void> {
 
 export async function listCampuses(): Promise<CampusOption[]> {
   return apiRequest<CampusOption[]>('/api/admin/campuses');
+}
+
+export async function listMediaLibrary(): Promise<MediaLibraryItem[]> {
+  return apiRequest<MediaLibraryItem[]>('/api/admin/media-library');
 }
 
 /**
