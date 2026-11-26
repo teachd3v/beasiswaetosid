@@ -7,7 +7,7 @@
     {
       "binding": "DB",
       "database_name": "beasiswaetosid-db",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "6106de75-d07c-4535-b256-589294557feb",
       "migrations_dir": "migrations"
     }
   ],
