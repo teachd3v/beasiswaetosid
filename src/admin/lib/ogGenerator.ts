@@ -214,7 +214,7 @@ export async function generateAndUploadNewsOgCard(
   ctx.fillText('Beasiswa ETOS ID · Dompet Dhuafa', padX, footerY + 44);
 
   const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, 'image/jpeg', 0.9),
+    canvas.toBlob(resolve, 'image/jpeg', 0.82),
   );
   if (!blob) {
     throw new Error('Gagal merender gambar OG JPEG.');

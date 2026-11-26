@@ -14,7 +14,7 @@ interface PageSeoMeta {
   jsonLd: Record<string, unknown>[];
 }
 
-const DEFAULT_IMAGE_PATH = '/og-home.png';
+const DEFAULT_IMAGE_PATH = '/og-home.jpg';
 
 const HOME_FAQ_ITEMS = [
   {
@@ -340,11 +340,6 @@ export const onRequest: PagesFunction<Bindings> = async (context) => {
         el.setAttribute('content', meta.title);
       },
     })
-    .on('meta[property="og:description"]', {
-      element(el) {
-        el.setAttribute('content', meta.description);
-      },
-    })
     .on('meta[property="og:url"]', {
       element(el) {
         el.setAttribute('content', meta.canonicalUrl);
@@ -363,11 +358,6 @@ export const onRequest: PagesFunction<Bindings> = async (context) => {
     .on('meta[name="twitter:title"]', {
       element(el) {
         el.setAttribute('content', meta.title);
-      },
-    })
-    .on('meta[name="twitter:description"]', {
-      element(el) {
-        el.setAttribute('content', meta.description);
       },
     })
     .on('meta[name="twitter:image"]', {

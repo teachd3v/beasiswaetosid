@@ -32,8 +32,6 @@ export function applyClientSeo({
 
   if (description) {
     upsertMeta('name', 'description', description);
-    upsertMeta('property', 'og:description', description);
-    upsertMeta('name', 'twitter:description', description);
   }
 
   upsertMeta(
