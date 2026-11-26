@@ -99,20 +99,24 @@ export function NewsSection({ onNavigate }: NewsSectionProps) {
                   onClick={(event) => handleLinkClick(event, href)}
                   className="editorial-card editorial-card-interactive group flex flex-col overflow-hidden text-left"
                 >
-                  {item.coverSrc && (
-                    <div className="relative aspect-16/10 w-full overflow-hidden bg-[var(--surface-placeholder)]">
+                  <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-[var(--surface-placeholder)]">
+                    {item.coverSrc ? (
                       <img
                         src={item.coverSrc}
                         alt={item.title}
                         loading="lazy"
                         decoding="async"
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-104"
+                        className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-104"
                       />
-                      <span className="absolute left-2 top-2 inline-flex rounded-full bg-white/92 px-2 py-0.5 text-[10px] font-semibold text-[var(--brand-green-dark)] backdrop-blur-xs sm:left-3 sm:top-3 sm:px-3 sm:py-1 sm:text-xs">
-                        {item.category}
-                      </span>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-[var(--brand-mint)]/50 text-xs font-semibold text-[var(--brand-green-dark)]">
+                        ETOS ID
+                      </div>
+                    )}
+                    <span className="absolute left-2 top-2 z-10 inline-flex rounded-full bg-white/92 px-2 py-0.5 text-[10px] font-semibold text-[var(--brand-green-dark)] backdrop-blur-xs sm:left-3 sm:top-3 sm:px-3 sm:py-1 sm:text-xs">
+                      {item.category}
+                    </span>
+                  </div>
 
                   <div className="flex flex-1 flex-col justify-between p-3 sm:p-5">
                     <div>

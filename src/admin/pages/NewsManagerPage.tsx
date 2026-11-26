@@ -261,23 +261,23 @@ export function NewsManagerPage() {
                         {articles.map((item) => (
                           <article
                             key={item.id}
-                            className="flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-2xs"
+                            className="flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-2xs"
                           >
-                            <div className="relative aspect-16/10 bg-neutral-100">
+                            <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-neutral-100">
                               {item.coverUrl ? (
                                 <img
                                   src={item.coverUrl}
                                   alt={item.title}
                                   loading="lazy"
-                                  className="h-full w-full object-cover"
+                                  className="absolute inset-0 h-full w-full object-cover object-center"
                                 />
                               ) : (
-                                <div className="flex h-full w-full items-center justify-center text-xs text-neutral-400">
-                                  No Cover
+                                <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 text-xs font-medium text-neutral-400">
+                                  Belum ada cover
                                 </div>
                               )}
                               <span
-                                className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                                className={`absolute left-2 top-2 z-10 rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-xs ${
                                   item.status === 'published'
                                     ? 'bg-emerald-600 text-white'
                                     : 'bg-amber-500 text-white'
