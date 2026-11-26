@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AboutSection } from './components/AboutSection';
 import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
@@ -21,6 +21,8 @@ import { fetchShowcaseMedia } from './services/cmsApi';
 import { applyClientSeo } from './lib/seo';
 
 const AdminApp = lazy(() => import('./admin/AdminApp'));
+const HERO_MAX_DESKTOP = 25;
+const HERO_MAX_MOBILE = 15;
 
 export function App() {
   const { route, navigate } = useRoute();
@@ -28,12 +30,30 @@ export function App() {
   const isAdmin = route.kind === 'admin';
   const reducedMotion = useReducedMotion();
   const activeSection = useActiveSection(isHome);
+  const [isMobileViewport, setIsMobileViewport] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(max-width: 767px)').matches : false,
+  );
   const [mediaItems, setMediaItems] =
     useState<readonly ShowcaseMediaItem[]>(SHOWCASE_MEDIA_ITEMS);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [originRect, setOriginRect] = useState<DOMRect | null>(null);
   const pendingReturnIndexRef = useRef<number | null>(null);
   const lastTriggerRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const onChange = (event: MediaQueryListEvent) => setIsMobileViewport(event.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  const visibleMediaItems = useMemo(() => {
+    const limit = isMobileViewport ? HERO_MAX_MOBILE : HERO_MAX_DESKTOP;
+    return mediaItems.slice(0, limit).map((item, idx) => ({
+      ...item,
+      index: idx,
+    }));
+  }, [mediaItems, isMobileViewport]);
 
   useEffect(() => {
     if (isAdmin) return;
@@ -58,7 +78,7 @@ export function App() {
   }, [isHome]);
 
   const activeItem: ShowcaseMediaItem | null =
-    isHome && selectedIndex !== null ? (mediaItems[selectedIndex] ?? null) : null;
+    isHome && selectedIndex !== null ? (visibleMediaItems[selectedIndex] ?? null) : null;
 
   useEffect(() => {
     if (selectedIndex !== null || pendingReturnIndexRef.current === null) return;
@@ -96,17 +116,17 @@ export function App() {
 
   const handlePrev = useCallback(() => {
     setSelectedIndex((prev) => {
-      if (prev === null || mediaItems.length === 0) return null;
-      return (prev - 1 + mediaItems.length) % mediaItems.length;
+      if (prev === null || visibleMediaItems.length === 0) return null;
+      return (prev - 1 + visibleMediaItems.length) % visibleMediaItems.length;
     });
-  }, [mediaItems.length]);
+  }, [visibleMediaItems.length]);
 
   const handleNext = useCallback(() => {
     setSelectedIndex((prev) => {
-      if (prev === null || mediaItems.length === 0) return null;
-      return (prev + 1) % mediaItems.length;
+      if (prev === null || visibleMediaItems.length === 0) return null;
+      return (prev + 1) % visibleMediaItems.length;
     });
-  }, [mediaItems.length]);
+  }, [visibleMediaItems.length]);
 
   if (route.kind === 'admin') {
     return (
@@ -133,7 +153,7 @@ export function App() {
       {route.kind === 'home' && (
         <main className="flex flex-1 flex-col">
           <MediaGlobeStage
-            items={mediaItems}
+            items={visibleMediaItems}
             activeItemId={activeItem?.id ?? null}
             isPaused={false}
             reducedMotion={reducedMotion}
@@ -165,7 +185,7 @@ export function App() {
       <MediaDetailLightbox
         item={activeItem}
         originRect={originRect}
-        totalCount={mediaItems.length}
+        totalCount={visibleMediaItems.length}
         reducedMotion={reducedMotion}
         onClose={handleCloseLightbox}
         onPrev={handlePrev}

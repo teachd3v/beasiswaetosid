@@ -36,13 +36,14 @@ publicRoutes.get('/campuses', async (c) => {
   );
 });
 
-// GET /api/public/media
+// GET /api/public/media (maksimal 25 foto aktif untuk Hero 3D Showcase)
 publicRoutes.get('/media', async (c) => {
   const { results } = await c.env.DB.prepare(
     `SELECT id, title, timestamp_label, alt, r2_key, width, height, sort_order
      FROM media_items
      WHERE is_published = 1
-     ORDER BY sort_order ASC, created_at ASC`,
+     ORDER BY sort_order ASC, created_at ASC
+     LIMIT 25`,
   ).all<{
     id: string;
     title: string;
