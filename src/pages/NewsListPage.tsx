@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { NEWS_CATEGORIES } from '../data/newsData';
 import type { NewsCategory, NewsItem } from '../data/newsData';
 import { fetchNewsList } from '../services/newsApi';
+import { applyClientSeo } from '../lib/seo';
 
 interface NewsListPageProps {
   readonly onNavigate: (to: string) => void;
@@ -12,7 +13,12 @@ export function NewsListPage({ onNavigate }: NewsListPageProps) {
   const [selectedCategory, setSelectedCategory] = useState<NewsCategory>('Semua');
 
   useEffect(() => {
-    document.title = 'Berita · ETOS ID';
+    applyClientSeo({
+      title: 'Berita & Kabar Etoser · Beasiswa ETOS ID',
+      description:
+        'Kumpulan berita terbaru seputar prestasi Etoser, aktivitas pembinaan, monitoring & evaluasi, serta program unggulan Beasiswa ETOS ID.',
+      path: '/berita',
+    });
     const controller = new AbortController();
     void fetchNewsList(controller.signal).then((data) => {
       if (!controller.signal.aborted) {

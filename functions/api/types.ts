@@ -2,6 +2,7 @@ export interface Bindings {
   DB: D1Database;
   MEDIA_BUCKET: R2Bucket;
   R2_PUBLIC_URL?: string;
+  SITE_URL?: string;
 }
 
 export interface AdminUser {

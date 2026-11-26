@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getCurrentAdmin, logoutAdmin } from '../services/adminApi';
 import type { AdminUser } from '../services/adminApi';
+import { applyClientSeo } from '../lib/seo';
 import { EtoserManagerPage } from './pages/EtoserManagerPage';
 import { LoginPage } from './pages/LoginPage';
 import { MediaManagerPage } from './pages/MediaManagerPage';
@@ -95,7 +96,10 @@ export default function AdminApp({ subPath, onNavigate }: AdminAppProps) {
   const activeLabel = NAV_ITEMS.find((t) => t.id === activeTab)?.label ?? 'CMS';
 
   useEffect(() => {
-    document.title = `${activeLabel} · Admin ETOS ID`;
+    applyClientSeo({
+      title: `${activeLabel} · Admin ETOS ID`,
+      noIndex: true,
+    });
   }, [activeLabel]);
 
   useEffect(() => {

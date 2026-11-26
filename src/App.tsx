@@ -18,6 +18,7 @@ import { NewsDetailPage } from './pages/NewsDetailPage';
 import { NewsListPage } from './pages/NewsListPage';
 import { TeamPage } from './pages/TeamPage';
 import { fetchShowcaseMedia } from './services/cmsApi';
+import { applyClientSeo } from './lib/seo';
 
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 
@@ -47,7 +48,12 @@ export function App() {
 
   useEffect(() => {
     if (isHome) {
-      document.title = 'ETOS ID · Ressillient Generations';
+      applyClientSeo({
+        title: 'Beasiswa ETOS ID · Dompet Dhuafa',
+        description:
+          'Beasiswa ETOS ID Dompet Dhuafa adalah program beasiswa dan pembinaan sarjana 8 semester di 15 PTN mitra untuk mencetak SDM strategis daerah yang berintegritas, profesional, dan transformatif.',
+        path: '/',
+      });
     }
   }, [isHome]);
 

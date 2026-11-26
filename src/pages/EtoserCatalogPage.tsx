@@ -3,6 +3,7 @@ import { EtoserCard } from '../components/EtoserCard';
 import { ETOSER_PROFILES } from '../data/etoserData';
 import type { EtoserProfile } from '../data/etoserData';
 import { fetchEtoserProfiles } from '../services/cmsApi';
+import { applyClientSeo } from '../lib/seo';
 
 interface EtoserCatalogPageProps {
   readonly onNavigate: (to: string) => void;
@@ -31,7 +32,12 @@ export function EtoserCatalogPage({
   const lastTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
-    document.title = 'Katalog Profil Etoser · ETOS ID';
+    applyClientSeo({
+      title: 'Katalog Profil Etoser · Beasiswa ETOS ID',
+      description:
+        'Kenali para penerima manfaat Beasiswa ETOS ID dari 15 PTN mitra di Indonesia beserta proyek sosial, minat keilmuan, dan prestasinya.',
+      path: '/etoser',
+    });
     const controller = new AbortController();
     void fetchEtoserProfiles(controller.signal).then((data) => {
       if (!controller.signal.aborted) {

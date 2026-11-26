@@ -6,6 +6,7 @@ import {
 } from '../data/teamData';
 import { fetchTeamData } from '../services/cmsApi';
 import type { PublicTeamPayload } from '../services/cmsApi';
+import { applyClientSeo } from '../lib/seo';
 
 interface TeamPageProps {
   readonly onNavigate: (to: string) => void;
@@ -20,7 +21,12 @@ export function TeamPage({ onNavigate }: TeamPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    document.title = 'Tim Kami · ETOS ID';
+    applyClientSeo({
+      title: 'Tim Kami · Pengelola & Fasilitator Daerah ETOS ID',
+      description:
+        'Struktur pengelola pusat Beastudi Indonesia, tim inti program ETOS ID, dan fasilitator daerah di 15 kampus mitra seluruh Indonesia.',
+      path: '/tim-kami',
+    });
     const controller = new AbortController();
     void fetchTeamData(controller.signal).then((data) => {
       if (!controller.signal.aborted) {

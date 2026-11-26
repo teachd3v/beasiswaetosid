@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { NewsItem } from '../data/newsData';
 import { fetchNewsBySlug, fetchNewsList } from '../services/newsApi';
+import { applyClientSeo } from '../lib/seo';
 
 interface NewsDetailPageProps {
   readonly slug: string;
@@ -21,7 +22,12 @@ export function NewsDetailPage({ slug, onNavigate }: NewsDetailPageProps) {
       if (controller.signal.aborted) return;
       setArticle(found);
       setAllNews(list);
-      document.title = found ? `${found.title} · ETOS ID` : 'Berita Tidak Ditemukan · ETOS ID';
+      applyClientSeo({
+        title: found ? `${found.title} · Berita ETOS ID` : 'Berita Tidak Ditemukan · ETOS ID',
+        description: found?.excerpt,
+        path: found ? `/berita/${encodeURIComponent(found.slug)}` : `/berita/${encodeURIComponent(slug)}`,
+        noIndex: !found,
+      });
     });
 
     return () => controller.abort();
