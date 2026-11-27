@@ -167,6 +167,25 @@ export const REGIONAL_FACILITATORS: readonly CampusFacilitatorGroup[] = [
     ],
   },
   {
+    campusShort: 'IPB',
+    campusFull: 'Institut Pertanian Bogor',
+    campusLogoSrc: encodeURI('/kampus/IPB (INSTITUT PERTANIAN BOGOR).png'),
+    facilitators: [
+      {
+        id: 'fasil-ipb-1',
+        name: 'Hendra Wijaya',
+        role: 'PIC Fasilitator Daerah',
+        photoSrc: '/media/YIC_ETOS_ID_2026_036.webp',
+      },
+      {
+        id: 'fasil-ipb-2',
+        name: 'Aulia Rahmawati',
+        role: 'PIC Fasilitator Daerah',
+        photoSrc: '/media/YIC_ETOS_ID_2026_037.webp',
+      },
+    ],
+  },
+  {
     campusShort: 'UGM',
     campusFull: 'Universitas Gadjah Mada',
     campusLogoSrc: encodeURI('/kampus/UGM (UNIVERSITAS GADJAH MADA).png'),

@@ -71,7 +71,7 @@ export function App() {
       applyClientSeo({
         title: 'Beasiswa ETOS ID · Dompet Dhuafa',
         description:
-          'Beasiswa ETOS ID Dompet Dhuafa adalah program beasiswa dan pembinaan sarjana 8 semester di 15 PTN mitra untuk mencetak SDM strategis daerah yang berintegritas, profesional, dan transformatif.',
+          'Beasiswa ETOS ID Dompet Dhuafa adalah program beasiswa dan pembinaan sarjana 8 semester di 16 PTN mitra untuk mencetak SDM strategis daerah yang berintegritas, profesional, dan transformatif.',
         path: '/',
       });
     }

@@ -113,7 +113,7 @@ async function resolvePageMeta(
     return {
       title: 'Katalog Profil Etoser · Beasiswa ETOS ID',
       description:
-        'Kenali para penerima manfaat Beasiswa ETOS ID dari 15 PTN mitra di Indonesia beserta proyek sosial, minat keilmuan, dan prestasinya.',
+        'Kenali para penerima manfaat Beasiswa ETOS ID dari 16 PTN mitra di Indonesia beserta proyek sosial, minat keilmuan, dan prestasinya.',
       canonicalUrl: `${origin}/etoser`,
       ogType: 'website',
       ogImage: defaultImage,
@@ -263,7 +263,7 @@ async function resolvePageMeta(
   return {
     title: 'Beasiswa ETOS ID · Dompet Dhuafa',
     description:
-      'Beasiswa ETOS ID Dompet Dhuafa adalah program beasiswa dan pembinaan sarjana 8 semester di 15 PTN mitra untuk mencetak SDM strategis daerah yang berintegritas, profesional, dan transformatif.',
+      'Beasiswa ETOS ID Dompet Dhuafa adalah program beasiswa dan pembinaan sarjana 8 semester di 16 PTN mitra untuk mencetak SDM strategis daerah yang berintegritas, profesional, dan transformatif.',
     canonicalUrl: `${origin}/`,
     ogType: 'website',
     ogImage: defaultImage,

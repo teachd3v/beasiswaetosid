@@ -14,7 +14,7 @@ export interface EtoserProfile {
 }
 
 /**
- * 15 profil Etoser dummy (1 Etoser per kampus mitra ETOS ID).
+ * 16 profil Etoser dummy (1 Etoser per kampus mitra ETOS ID).
  * Ganti foto dan biodata dengan data resmi Etoser kapan saja.
  */
 export const ETOSER_PROFILES: readonly EtoserProfile[] = [
@@ -124,6 +124,24 @@ export const ETOSER_PROFILES: readonly EtoserProfile[] = [
       'Juara 1 Olimpiade Ekonomi Syariah Nasional',
       'Penulis opini filantropi muda di media mahasiswa',
       'Penggerak diskusi kajian kepemimpinan Etoser Jakarta',
+    ],
+  },
+  {
+    id: 'etoser-ipb',
+    name: 'Rafiandra Putra Pratama',
+    campusShort: 'IPB',
+    campusFull: 'Institut Pertanian Bogor',
+    campusLogoSrc: encodeURI('/kampus/IPB (INSTITUT PERTANIAN BOGOR).png'),
+    major: 'Agronomi dan Hortikultura',
+    batch: 'Angkatan 2023',
+    photoSrc: '/media/YIC_ETOS_ID_2026_035.webp',
+    interest: 'Ketahanan Pangan & Pertanian',
+    projectTitle: 'Desa Bibit Mandiri untuk Petani Hortikultura Bogor',
+    bio: 'Fokus mengembangkan budidaya ramah lingkungan dan pendampingan petani muda untuk memperkuat ketahanan pangan daerah.',
+    achievements: [
+      'Juara 1 Lomba Karya Tulis Ilmiah Ketahanan Pangan Nasional',
+      'Inisiator kebun edukasi pangan keluarga di Lingkar Kampus IPB',
+      'Koordinator Community of Interest Agro-Ekologi ETOS Bogor',
     ],
   },
   {

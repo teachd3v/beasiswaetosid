@@ -35,7 +35,7 @@ export function EtoserCatalogPage({
     applyClientSeo({
       title: 'Katalog Profil Etoser · Beasiswa ETOS ID',
       description:
-        'Kenali para penerima manfaat Beasiswa ETOS ID dari 15 PTN mitra di Indonesia beserta proyek sosial, minat keilmuan, dan prestasinya.',
+        'Kenali para penerima manfaat Beasiswa ETOS ID dari 16 PTN mitra di Indonesia beserta proyek sosial, minat keilmuan, dan prestasinya.',
       path: '/etoser',
     });
     const controller = new AbortController();

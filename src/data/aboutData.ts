@@ -29,7 +29,7 @@ export const ABOUT_METRICS: readonly AboutMetric[] = [
     label: 'Jejaring Dalam Hingga Luar Negeri',
   },
   {
-    value: '15 PTN',
+    value: '16 PTN',
     label: 'Kampus Mitra se-Indonesia',
   },
   {
@@ -100,6 +100,11 @@ export const PARTNER_CAMPUSES: readonly PartnerCampus[] = [
     shortName: 'UIN Jakarta',
     fullName: 'UIN Syarif Hidayatullah Jakarta',
     logoSrc: encodeURI('/kampus/UIN JAKARTA (UIN SYARIF HIDAYATULLAH).png'),
+  },
+  {
+    shortName: 'IPB',
+    fullName: 'Institut Pertanian Bogor',
+    logoSrc: encodeURI('/kampus/IPB (INSTITUT PERTANIAN BOGOR).png'),
   },
   {
     shortName: 'UGM',
