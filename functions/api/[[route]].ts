@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { handle } from 'hono/cloudflare-pages';
 import { adminRoutes } from './routes/admin.ts';
 import { authRoutes } from './routes/auth.ts';
+import { editorialRoutes } from './routes/editorial.ts';
 import { mediaAdminRoutes, mediaPublicRoutes } from './routes/media.ts';
 import { publicRoutes } from './routes/public.ts';
 import type { AppEnv } from './types.ts';
@@ -12,6 +13,7 @@ app.get('/health', (c) => c.json({ ok: true, service: 'beasiswaetosid-cms' }));
 
 app.route('/public', publicRoutes);
 app.route('/auth', authRoutes);
+app.route('/editorial', editorialRoutes);
 app.route('/media', mediaPublicRoutes);
 app.route('/admin', mediaAdminRoutes);
 app.route('/admin', adminRoutes);

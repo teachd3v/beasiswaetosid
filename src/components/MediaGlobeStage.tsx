@@ -90,7 +90,7 @@ export function MediaGlobeStage({
             style={{ fontFamily: 'var(--font-display)' }}
             className="hero-glow-title relative m-0 pb-1 text-[clamp(2.15rem,8.2vw,7.25rem)] font-extrabold leading-[0.9] tracking-[-0.04em]"
           >
-            <span className="block">Ressillient</span>
+            <span className="block">Resilient</span>
             <span className="block">Generations</span>
           </h1>
         </div>

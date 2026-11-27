@@ -3,6 +3,7 @@ export interface Bindings {
   MEDIA_BUCKET: R2Bucket;
   R2_PUBLIC_URL?: string;
   SITE_URL?: string;
+  EDITORIAL_SYNC_SECRET?: string;
 }
 
 export interface AdminUser {

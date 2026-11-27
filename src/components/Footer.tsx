@@ -100,7 +100,7 @@ export function Footer() {
 
       <div className="mx-auto mt-6 max-w-7xl border-t border-black/6 px-4 pt-5 sm:mt-8 sm:px-8">
         <p className="text-xs text-[var(--ink-muted)]">
-          © {CURRENT_YEAR} ETOS ID · Ressillient Generations
+          © {CURRENT_YEAR} ETOS ID · Resilient Generations
         </p>
       </div>
     </footer>
